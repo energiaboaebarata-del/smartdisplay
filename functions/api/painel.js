@@ -114,34 +114,60 @@ async function agenda(urlICS) {
 
 // ---------- Mercado futuro (B3, com ~15 min de atraso) ----------
 const B3 = "https://cotacao.b3.com.br/mds/api/v1/DerivativeQuotation/";
+const num = v => (v == null || v === "" || isNaN(Number(v))) ? null : Number(v);
 async function contratos(ativo) {
-  const r = await fetch(B3 + ativo, { cf: { cacheTtl: 300, cacheEverything: true }, headers: { "User-Agent": "Mozilla/5.0 SmartDisplay", "Accept": "application/json" } });
-  if (!r.ok) throw new Error("B3 " + ativo + " " + r.status);
-  const d = await r.json();
-  return (d.Scty || []).map(s => ({
-    codigo: s.symb,
-    vencimento: s.asset && s.asset.AsstSummry && s.asset.AsstSummry.mtrtyCode,
-    preco: s.SctyQtn && s.SctyQtn.curPrc,
-    variacao: s.SctyQtn && s.SctyQtn.prcFlcn,
-  })).filter(c => c.preco != null && c.vencimento)
-    .sort((a, b) => String(a.vencimento).localeCompare(String(b.vencimento)));
+  const r = await fetch(B3 + ativo, {
+    cf: { cacheTtl: 300, cacheEverything: true },
+    headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+      "Accept": "application/json, text/plain, */*", "Referer": "https://www.b3.com.br/" },
+  });
+  if (!r.ok) throw new Error(ativo + ": B3 respondeu " + r.status);
+  const txt = await r.text();
+  let d; try { d = JSON.parse(txt); } catch (e) { throw new Error(ativo + ": resposta não é JSON (" + txt.slice(0, 60) + ")"); }
+  const lista = (d.Scty || []).map(s => {
+    const q = s.SctyQtn || {};
+    const compra = num(s.buyOffer && s.buyOffer.price), venda = num(s.sellOffer && s.sellOffer.price);
+    return {
+      codigo: s.symb,
+      vencimento: s.asset && s.asset.AsstSummry && s.asset.AsstSummry.mtrtyCode,
+      atual: num(q.curPrc),
+      meio: compra != null && venda != null ? (compra + venda) / 2 : (compra != null ? compra : venda),
+      ajuste: num(q.prvsDayAdjstmntPric),
+      variacao: num(q.prcFlcn),
+    };
+  }).filter(c => c.vencimento).sort((a, b) => String(a.vencimento).localeCompare(String(b.vencimento)));
+  if (!lista.length) throw new Error(ativo + ": B3 não mandou contratos");
+  return lista;
 }
 const MESES = { F: "jan", G: "fev", H: "mar", J: "abr", K: "mai", M: "jun", N: "jul", Q: "ago", U: "set", V: "out", X: "nov", Z: "dez" };
 const rotulo = codigo => { const m = String(codigo).match(/([FGHJKMNQUVXZ])(\d{2})$/); return m ? MESES[m[1]] + "/" + m[2] : codigo; };
+// moeda (DOL/EUR): preço em pontos por US$/€ 1.000; DI: a própria taxa (%)
+function cotacao(c, moeda) {
+  let valor = c.atual, base = "agora";
+  if (valor == null && c.meio != null) { valor = c.meio; base = "ofertas"; }
+  if (valor == null && moeda && c.ajuste != null) { valor = c.ajuste; base = "ajuste de ontem"; }
+  if (valor == null) return null;
+  let variacao = c.variacao;
+  if (variacao == null && moeda && c.ajuste && base !== "ajuste de ontem") variacao = (valor / c.ajuste - 1) * 100;
+  return { codigo: rotulo(c.codigo), valor: moeda ? valor / 1000 : valor, variacao, base };
+}
 async function futuros() {
   const hoje = new Date(Date.now() - 3 * 3600e3).toISOString().slice(0, 10);
-  const proximo = lista => lista.find(c => c.vencimento > hoje) || lista[0];
+  const futuras = lista => lista.filter(c => c.vencimento > hoje);
+  const primeiraComPreco = (lista, moeda) => { for (const c of futuras(lista)) { const q = cotacao(c, moeda); if (q) return q; } return null; };
   const [dol, eur, di] = await Promise.allSettled([contratos("DOL"), contratos("EUR"), contratos("DI1")]);
-  const saida = {};
-  if (dol.status === "fulfilled" && dol.value.length) { const c = proximo(dol.value); saida.dolar = { codigo: rotulo(c.codigo), valor: c.preco / 1000, variacao: c.variacao }; }
-  if (eur.status === "fulfilled" && eur.value.length) { const c = proximo(eur.value); saida.euro = { codigo: rotulo(c.codigo), valor: c.preco / 1000, variacao: c.variacao }; }
-  if (di.status === "fulfilled" && di.value.length) {
+  const saida = {}, erros = [];
+  if (dol.status === "fulfilled") { const q = primeiraComPreco(dol.value, true); if (q) saida.dolar = q; else erros.push("DOL: sem preço"); } else erros.push(String(dol.reason.message));
+  if (eur.status === "fulfilled") { const q = primeiraComPreco(eur.value, true); if (q) saida.euro = q; else erros.push("EUR: sem preço"); } else erros.push(String(eur.reason.message));
+  if (di.status === "fulfilled") {
     // o mais acompanhado: o DI de janeiro do ano que vem
-    const ano = String(new Date().getUTCFullYear() + 1).slice(2);
-    const c = di.value.find(x => x.codigo === "DI1F" + ano) || proximo(di.value);
-    saida.juros = { codigo: rotulo(c.codigo), valor: c.preco, variacao: c.variacao };
-  }
-  if (!Object.keys(saida).length) throw new Error("B3 sem dados");
+    const ano = String(new Date(Date.now() - 3 * 3600e3).getUTCFullYear() + 1).slice(2);
+    const alvo = di.value.find(x => x.codigo === "DI1F" + ano);
+    const q = (alvo && cotacao(alvo, false)) || primeiraComPreco(di.value, false);
+    if (q) saida.juros = q; else erros.push("DI1: sem preço");
+  } else erros.push(String(di.reason.message));
+  if (erros.length) saida.avisos = erros;
+  if (!saida.dolar && !saida.euro && !saida.juros) throw new Error(erros.join(" | ") || "B3 sem dados");
   return saida;
 }
 
