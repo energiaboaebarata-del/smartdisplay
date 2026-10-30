@@ -65,12 +65,11 @@ h2 { margin:0; font-family:Manrope, sans-serif; font-size:20px; font-weight:700;
 .oferta .linha:last-child { border-bottom:0; padding-bottom:0; }
 .oferta .big { font-family:Manrope, sans-serif; font-size:30px; font-weight:800; color:var(--accent); white-space:nowrap; }
 .oferta .nome { font-size:15px; font-weight:600; }
-.globo-card { grid-column: span 2; }
-.globo-box { height:440px; border-radius:14px; overflow:hidden; background:#000; }
+.globo-box { height:360px; border-radius:14px; overflow:hidden; background:#000; }
 .globo-box iframe { width:100%; height:100%; border:0; display:block; }
 .dica { margin:0; font-size:12px; color:var(--muted); }
 .links { display:flex; flex-wrap:wrap; gap:20px; }
-@media (max-width:760px){ .globo-card { grid-column: auto; } .globo-box { height:380px; } }
+
 footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; padding-top:12px; border-top:1px solid var(--border); font-size:13px; color:var(--muted); }
 @media (max-width:600px){ h1{font-size:30px} .cards{grid-template-columns:1fr} }
 </style>
@@ -126,7 +125,7 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
   <article class="globo-card">
     <div class="head"><h2>Melhor oferta perto de você</h2><span class="tag"><span class="dot" style="background:#D4B062"></span>S2BT</span></div>
     <div class="globo-box"><iframe id="globo" title="Globo com a melhor oferta de energia por assinatura na sua cidade" loading="lazy"></iframe></div>
-    <p class="dica">Arraste para girar · Ctrl + rodinha para aproximar · toque no nome da cidade para trocar</p>
+    <p class="dica">Arraste para girar · Ctrl + rodinha aproxima · toque na cidade para trocar</p>
     <div class="links"><a class="more" href="https://www.s2bt.com.br/simular">Abrir o simulador →</a><a class="more" href="https://www.s2bt.com.br/globo">Globo em tela cheia →</a></div>
   </article>
 
