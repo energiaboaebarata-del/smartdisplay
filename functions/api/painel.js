@@ -176,7 +176,7 @@ async function futuros() {
 
 // ---------- Bandeira tarifária (dados abertos da ANEEL) ----------
 const ANEEL = "https://dadosabertos.aneel.gov.br/api/3/action/";
-const BANDEIRA_RESERVA = { bandeira: "Verde", competencia: "", fonte: "informada pelo Rafael em 30/10/2026" };
+const BANDEIRA_RESERVA = { bandeira: "Verde", competencia: "2026-11", fonte: "informada pelo Rafael em 30/10/2026" };
 async function aneel(caminho) {
   for (const base of [ANEEL, ANEEL.replace("https://", "http://")]) {
     const r = await fetch(base + caminho, { cf: { cacheTtl: 21600, cacheEverything: true }, headers: { "Accept": "application/json", "User-Agent": "Mozilla/5.0 SmartDisplay" } }).catch(() => null);
@@ -184,24 +184,53 @@ async function aneel(caminho) {
   }
   throw new Error("ANEEL não respondeu");
 }
+// nome oficial → padrão; null quando o texto não é nome de bandeira
+function normBandeira(txt) {
+  const k = String(txt || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  if (/escassez/.test(k)) return "Escassez hídrica";
+  if (/vermelha/.test(k)) return /2|ii\b/.test(k) ? "Vermelha P2" : "Vermelha P1";
+  if (/amarela/.test(k)) return "Amarela";
+  if (/verde/.test(k)) return "Verde";
+  return null;
+}
+// lê a competência em vários formatos e devolve "AAAA-MM"
+function normMes(v) {
+  const t = String(v || "");
+  let m = t.match(/(\d{4})-(\d{2})/); if (m) return m[1] + "-" + m[2];
+  m = t.match(/(\d{2})\/(\d{2})\/(\d{4})/); if (m) return m[3] + "-" + m[2];
+  m = t.match(/(\d{2})\/(\d{4})/); if (m) return m[2] + "-" + m[1];
+  m = t.match(/^(\d{4})(\d{2})$/); if (m) return m[1] + "-" + m[2];
+  return null;
+}
 async function bandeira() {
+  const agora = new Date(Date.now() - 3 * 3600e3);
+  const mesAtual = agora.toISOString().slice(0, 7);
+  const prox = new Date(Date.UTC(agora.getUTCFullYear(), agora.getUTCMonth() + 1, 1)).toISOString().slice(0, 7);
+  const diag = [];
   try {
     const busca = await aneel("package_search?q=" + encodeURIComponent("bandeira tarifaria acionamento") + "&rows=10");
-    const recursos = (busca.results || []).flatMap(p => p.resources || [])
-      .filter(r => r.datastore_active && /bandeira|acionamento/i.test((r.name || "") + " " + (r.description || "")));
+    const recursos = (busca.results || []).flatMap(p => p.resources || []).filter(r => r.datastore_active);
     for (const rec of recursos) {
-      const meta = await aneel("datastore_search?resource_id=" + rec.id + "&limit=0").catch(() => null);
-      const campos = ((meta && meta.fields) || []).map(f => f.id);
-      const fBand = campos.find(c => /bandeira/i.test(c) && !/valor|vlr|custo/i.test(c));
-      const fData = campos.find(c => /compet/i.test(c)) || campos.find(c => /^dat|data|mes/i.test(c));
+      const res = await aneel("datastore_search?resource_id=" + rec.id + "&limit=1000").catch(() => null);
+      if (!res) continue;
+      const campos = (res.fields || []).map(f => f.id);
+      const fBand = campos.find(c => /bandeira/i.test(c) && /nom|dsc|desc|acionad/i.test(c)) || campos.find(c => /bandeira/i.test(c) && !/valor|vlr|custo|adicional/i.test(c));
+      const fData = campos.find(c => /compet/i.test(c));
+      diag.push((rec.name || rec.id) + " [" + campos.join(",") + "]");
       if (!fBand || !fData) continue;
-      const res = await aneel("datastore_search?resource_id=" + rec.id + "&limit=3&sort=" + encodeURIComponent(fData + " desc")).catch(() => null);
-      const linha = res && (res.records || [])[0];
-      if (linha && linha[fBand]) return { bandeira: String(linha[fBand]).trim(), competencia: String(linha[fData]).slice(0, 10), fonte: "ANEEL" };
+      const linhas = (res.records || []).map(r => ({ mes: normMes(r[fData]), nome: normBandeira(r[fBand]) })).filter(x => x.mes && x.nome);
+      const meses = new Set(linhas.map(x => x.mes));
+      if (meses.size < 6) continue;                                // tabela de acionamento: uma linha por mês, muitos meses
+      const porMes = {};
+      linhas.forEach(x => { (porMes[x.mes] = porMes[x.mes] || new Set()).add(x.nome); });
+      if (Object.values(porMes).some(set => set.size > 1)) continue; // mais de uma bandeira no mesmo mês = não é o acionamento
+      const escolhido = porMes[prox] ? prox : porMes[mesAtual] ? mesAtual : null;
+      if (!escolhido) continue;                                     // dado velho: não arrisca
+      return { bandeira: [...porMes[escolhido]][0], competencia: escolhido, fonte: "ANEEL", atual: porMes[mesAtual] ? [...porMes[mesAtual]][0] : null };
     }
-    throw new Error("sem tabela de acionamento");
+    throw new Error("nenhuma tabela confiável");
   } catch (e) {
-    return { ...BANDEIRA_RESERVA, aviso: String(e.message || e) };
+    return { ...BANDEIRA_RESERVA, aviso: String(e.message || e), tabelas: diag.slice(0, 6) };
   }
 }
 
