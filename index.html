@@ -32,11 +32,16 @@ input[type=search] { flex:1; min-width:0; height:48px; padding:0 16px; border-ra
 button { height:48px; padding:0 20px; border-radius:12px; border:0; background:var(--btn); color:var(--btnText); font-weight:700; font-size:15px; font-family:inherit; cursor:pointer; }
 button.ghost { background:transparent; color:var(--muted); border:1px solid var(--border); font-weight:500; font-size:13px; height:44px; padding:0 14px; }
 nav { display:flex; flex-wrap:wrap; gap:10px; }
+nav.redes { margin-top:-16px; align-items:center; }
+nav.redes .rotulo { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.12em; font-weight:600; margin-right:4px; }
+nav.redes a { min-height:40px; font-size:13px; }
 nav a { display:inline-flex; align-items:center; min-height:44px; padding:0 16px; border-radius:999px; background:var(--surface); border:1px solid var(--border); color:var(--text); font-size:14px; font-weight:500; }
 .ind { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:12px; }
 .tile { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; display:flex; flex-direction:column; gap:4px; }
 .tile span { font-size:13px; color:var(--muted); }
 .tile small { font-size:12px; color:var(--muted); }
+.tile .fut { font-size:11px; opacity:.85; margin-top:2px; border-top:1px dashed var(--border); padding-top:6px; }
+.tile .fut:empty { display:none; }
 .tile strong { font-family:Manrope, sans-serif; font-size:24px; }
 .cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(340px, 1fr)); gap:20px; align-items:start; }
 article { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:24px; display:flex; flex-direction:column; gap:16px; }
@@ -46,6 +51,20 @@ h2 { margin:0; font-family:Manrope, sans-serif; font-size:20px; font-weight:700;
 .dot { width:8px; height:8px; border-radius:50%; }
 .ph { border-radius:12px; background:var(--ph); border:1px dashed var(--phBorder); display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:14px; text-align:center; padding:16px; min-height:120px; line-height:1.5; }
 .more { font-size:14px; font-weight:600; }
+.lista { margin:0; padding:0; list-style:none; display:flex; flex-direction:column; }
+.lista li { padding:12px 0; border-bottom:1px solid var(--border); display:flex; flex-direction:column; gap:4px; }
+.lista li:first-child { padding-top:0; }
+.lista li:last-child { border-bottom:0; padding-bottom:0; }
+.lista a.tit { color:var(--text); font-size:15px; font-weight:600; line-height:1.4; }
+.lista .meta { font-size:12px; color:var(--muted); }
+.agenda li { flex-direction:row; gap:14px; align-items:baseline; }
+.agenda .h { font-size:13px; color:var(--muted); min-width:52px; font-variant-numeric:tabular-nums; }
+.carregando, .aviso { color:var(--muted); font-size:14px; line-height:1.5; margin:0; }
+.oferta { display:flex; flex-direction:column; gap:14px; }
+.oferta .linha { display:flex; justify-content:space-between; align-items:baseline; gap:12px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+.oferta .linha:last-child { border-bottom:0; padding-bottom:0; }
+.oferta .big { font-family:Manrope, sans-serif; font-size:30px; font-weight:800; color:var(--accent); white-space:nowrap; }
+.oferta .nome { font-size:15px; font-weight:600; }
 footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; padding-top:12px; border-top:1px solid var(--border); font-size:13px; color:var(--muted); }
 @media (max-width:600px){ h1{font-size:30px} .cards{grid-template-columns:1fr} }
 </style>
@@ -79,10 +98,19 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
   <a href="https://claude.ai">Claude</a>
 </nav>
 
+<nav aria-label="Redes e presença online" class="redes">
+  <span class="rotulo">Redes</span>
+  <a href="https://www.linkedin.com/in/rafaspinola/">LinkedIn · Rafael</a>
+  <a href="https://www.linkedin.com/company/s2bt-energia/">LinkedIn · S2BT</a>
+  <a href="https://www.instagram.com/orafaelspinola/">Instagram · @orafaelspinola</a>
+  <a href="https://www.instagram.com/s2bt.energia/">Instagram · @s2bt.energia</a>
+  <a href="https://business.google.com/">Google Meu Negócio</a>
+</nav>
+
 <section class="ind" aria-label="Indicadores econômicos">
-  <div class="tile"><span>Dólar</span><strong id="usd">—</strong><small id="usdv">carregando…</small></div>
-  <div class="tile"><span>Euro</span><strong id="eur">—</strong><small id="eurv">carregando…</small></div>
-  <div class="tile"><span>Selic (meta)</span><strong id="selic">—</strong><small>ao ano · Banco Central</small></div>
+  <div class="tile"><span>Dólar</span><strong id="usd">—</strong><small id="usdv">carregando…</small><small class="fut" id="usdf"></small></div>
+  <div class="tile"><span>Euro</span><strong id="eur">—</strong><small id="eurv">carregando…</small><small class="fut" id="eurf"></small></div>
+  <div class="tile"><span>Selic (meta)</span><strong id="selic">—</strong><small>ao ano · Banco Central</small><small class="fut" id="selicf"></small></div>
   <div class="tile"><span>IPCA 12 meses</span><strong id="ipca">—</strong><small id="ipcad">Banco Central</small></div>
   <div class="tile"><span>Bandeira tarifária</span><strong style="font-size:18px"><a href="https://www.gov.br/aneel/pt-br/assuntos/tarifas/bandeiras-tarifarias">Ver na ANEEL</a></strong><small>em breve aqui</small></div>
 </section>
@@ -91,25 +119,25 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
 
   <article>
     <div class="head"><h2>Política</h2><span class="tag"><span class="dot" style="background:#6F9BE8"></span>Poderômetro</span></div>
-    <div class="ph">As manchetes do Poderômetro vão aparecer aqui na próxima etapa.</div>
+    <ul class="lista" id="l-politica"><li class="carregando">Carregando…</li></ul>
     <a class="more" href="https://poderometro.com.br">Abrir o Poderômetro →</a>
   </article>
 
   <article>
     <div class="head"><h2>Direitos PcD</h2><span class="tag"><span class="dot" style="background:#4FBF9F"></span>Inclui+</span></div>
-    <div class="ph">As notícias do Inclui+ vão aparecer aqui na próxima etapa.</div>
+    <ul class="lista" id="l-pcd"><li class="carregando">Carregando…</li></ul>
     <a class="more" href="https://pcd.s2bt.com.br">Abrir o Inclui+ →</a>
   </article>
 
   <article>
     <div class="head"><h2>Melhor oferta perto de você</h2><span class="tag"><span class="dot" style="background:#D4B062"></span>S2BT</span></div>
-    <div class="ph">A melhor oferta de energia por assinatura da sua região vai aparecer aqui numa próxima etapa.</div>
+    <div id="l-oferta"><p class="carregando">Carregando…</p></div>
     <a class="more" href="https://www.s2bt.com.br">Abrir o simulador →</a>
   </article>
 
   <article>
     <div class="head"><h2>Hoje</h2><span class="tag"><span class="dot" style="background:#E08F5A"></span>Google Agenda</span></div>
-    <div class="ph">Seus compromissos do dia vão aparecer aqui, com acesso protegido.</div>
+    <ul class="lista agenda" id="l-agenda"><li class="carregando">Carregando…</li></ul>
     <a class="more" href="https://calendar.google.com/calendar/r/day">Abrir a agenda de hoje →</a>
   </article>
 
@@ -195,8 +223,70 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
       .catch(function () { set('ipca', '—'); });
   }
 
+  // ---------- Meus sites (Poderômetro, Inclui+, S2BT, Agenda) ----------
+  function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function quando(d) {
+    if (!d) return '';
+    var m = String(d).match(/(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2}))?/);
+    if (!m) return '';
+    var hoje = new Date(); var iso = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0') + '-' + String(hoje.getDate()).padStart(2, '0');
+    var dia = m[1] + '-' + m[2] + '-' + m[3];
+    var txt = dia === iso ? 'hoje' : (m[3] + '/' + m[2]);
+    return m[4] ? txt + ', ' + m[4] + 'h' + m[5] : txt;
+  }
+  function lista(id, bloco, vazio) {
+    var el = document.getElementById(id);
+    if (!bloco || bloco.erro || !bloco.itens || !bloco.itens.length) { el.innerHTML = '<li class="aviso">' + vazio + '</li>'; return; }
+    el.innerHTML = bloco.itens.map(function (n) {
+      return '<li><a class="tit" href="' + esc(n.url) + '">' + esc(n.titulo) + '</a><span class="meta">' + esc(n.fonte) + (n.data ? ' · ' + esc(quando(n.data)) : '') + '</span></li>';
+    }).join('');
+  }
+  var chave = null;
+  try {
+    var k = new URLSearchParams(location.search).get('k');
+    if (k) { localStorage.setItem('sd-chave', k); history.replaceState(null, '', location.pathname); }
+    chave = localStorage.getItem('sd-chave');
+  } catch (e) {}
+  function meusSites() {
+    pega('/api/painel' + (chave ? '?k=' + encodeURIComponent(chave) : ''))
+      .then(function (d) {
+        var f = d.futuros;
+        if (f && !f.erro) {
+          function seta(v) { return v == null ? '' : (Number(v) >= 0 ? ' ▲ ' : ' ▼ ') + br(Math.abs(v), 2) + '%'; }
+          if (f.dolar) set('usdf', 'Futuro ' + f.dolar.codigo + ': R$ ' + br(f.dolar.valor, 4) + seta(f.dolar.variacao));
+          if (f.euro) set('eurf', 'Futuro ' + f.euro.codigo + ': R$ ' + br(f.euro.valor, 4) + seta(f.euro.variacao));
+          if (f.juros) set('selicf', 'DI futuro ' + f.juros.codigo + ': ' + br(f.juros.valor, 2) + '%' + seta(f.juros.variacao));
+        }
+        lista('l-politica', d.politica, 'As notícias do Poderômetro não carregaram agora. Tente de novo em alguns minutos.');
+        lista('l-pcd', d.pcd, 'As notícias do Inclui+ não carregaram agora. Tente de novo em alguns minutos.');
+        var o = d.oferta, box = document.getElementById('l-oferta');
+        if (!o || o.erro || !o.distribuidoras || !o.distribuidoras.length) {
+          box.innerHTML = '<p class="aviso">Não encontrei ofertas para o seu estado agora. Abra o simulador para ver todas.</p>';
+        } else {
+          box.innerHTML = '<div class="oferta">' + o.distribuidoras.map(function (x) {
+            return '<div class="linha"><div><div class="nome">' + esc(x.distribuidora) + ' · ' + esc(o.uf) + '</div><span class="meta" style="font-size:12px;color:var(--muted)">' + x.opcoes + (x.opcoes > 1 ? ' ofertas' : ' oferta') + ' na praça</span></div><span class="big">' + esc(x.texto) + '</span></div>';
+          }).join('') + '</div>';
+        }
+        var a = d.agenda, el = document.getElementById('l-agenda');
+        if (a && a.bloqueada) {
+          el.innerHTML = '<li class="aviso">' + (a.configurada ? 'Abra o SmartDisplay pelo seu link pessoal para ver a agenda.' : 'A agenda ainda não foi ligada. Falta um passo de configuração.') + '</li>';
+        } else if (!a || a.erro) {
+          el.innerHTML = '<li class="aviso">A agenda não carregou agora. Tente de novo em alguns minutos.</li>';
+        } else if (!a.itens.length) {
+          el.innerHTML = '<li class="aviso">Nada marcado para hoje.</li>';
+        } else {
+          el.innerHTML = a.itens.map(function (e) { return '<li><span class="h">' + (e.hora || 'dia todo') + '</span><span>' + esc(e.titulo) + '</span></li>'; }).join('') +
+            (a.total > a.itens.length ? '<li class="aviso">+ ' + (a.total - a.itens.length) + ' outros</li>' : '');
+        }
+      })
+      .catch(function () {
+        ['l-politica', 'l-pcd', 'l-agenda'].forEach(function (id) { document.getElementById(id).innerHTML = '<li class="aviso">Não carregou agora. Tente de novo em alguns minutos.</li>'; });
+        document.getElementById('l-oferta').innerHTML = '<p class="aviso">Não carregou agora.</p>';
+      });
+  }
+
   function atualiza() {
-    clima(); cambio(); bc();
+    clima(); cambio(); bc(); meusSites();
     set('atualizado', 'Atualizado às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
   }
   atualiza();
