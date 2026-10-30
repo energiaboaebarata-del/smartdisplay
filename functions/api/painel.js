@@ -176,13 +176,13 @@ export async function onRequest(context) {
   const { request, env } = context;
   const url = new URL(request.url);
   const uf = (url.searchParams.get("uf") || request.cf?.regionCode || "RJ").toUpperCase().slice(0, 2);
-  const tarefas = { politica: politica(), pcd: pcd(), oferta: oferta(uf), futuros: futuros() };
+  const tarefas = { politica: politica(), pcd: pcd(), futuros: futuros() };
   const chave = url.searchParams.get("k");
   const agendaLiberada = env.SD_CHAVE && env.AGENDA_ICS && chave && chave === env.SD_CHAVE;
   if (agendaLiberada) tarefas.agenda = agenda(env.AGENDA_ICS);
   const nomes = Object.keys(tarefas);
   const res = await Promise.allSettled(Object.values(tarefas));
-  const saida = { geradoEm: new Date().toISOString() };
+  const saida = { geradoEm: new Date().toISOString(), local: { cidade: request.cf?.city || "", uf } };
   res.forEach((r, i) => { saida[nomes[i]] = r.status === "fulfilled" ? r.value : { erro: String(r.reason && r.reason.message || r.reason) }; });
   if (!agendaLiberada) saida.agenda = { bloqueada: true, configurada: Boolean(env.SD_CHAVE && env.AGENDA_ICS) };
   return new Response(JSON.stringify(saida), {
