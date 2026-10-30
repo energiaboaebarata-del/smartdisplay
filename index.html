@@ -40,9 +40,11 @@ nav a { display:inline-flex; align-items:center; min-height:44px; padding:0 16px
 .tile { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; display:flex; flex-direction:column; gap:4px; }
 .tile span { font-size:13px; color:var(--muted); }
 .tile small { font-size:12px; color:var(--muted); }
-.tile .fut { font-size:11px; opacity:.85; margin-top:2px; border-top:1px dashed var(--border); padding-top:6px; }
+.tile .fut { font-size:13px; font-weight:700; color:var(--text); margin-top:4px; border-top:1px dashed var(--border); padding-top:6px; }
 .tile .fut:empty { display:none; }
+.tile strong .bdot { display:inline-block; width:14px; height:14px; border-radius:50%; margin-right:8px; vertical-align:middle; background:var(--border); }
 .tile strong { font-family:Manrope, sans-serif; font-size:24px; }
+.tile strong span { font-size:inherit; color:inherit; }
 .cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(340px, 1fr)); gap:20px; align-items:start; }
 article { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:24px; display:flex; flex-direction:column; gap:16px; }
 .head { display:flex; justify-content:space-between; align-items:center; gap:12px; }
@@ -116,8 +118,8 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
   <div class="tile"><span>Dólar</span><strong id="usd">—</strong><small id="usdv">carregando…</small><small class="fut" id="usdf"></small></div>
   <div class="tile"><span>Euro</span><strong id="eur">—</strong><small id="eurv">carregando…</small><small class="fut" id="eurf"></small></div>
   <div class="tile"><span>Selic (meta)</span><strong id="selic">—</strong><small>ao ano · Banco Central</small><small class="fut" id="selicf"></small></div>
-  <div class="tile"><span>IPCA 12 meses</span><strong id="ipca">—</strong><small id="ipcad">Banco Central</small></div>
-  <div class="tile"><span>Bandeira tarifária</span><strong style="font-size:18px"><a href="https://www.gov.br/aneel/pt-br/assuntos/tarifas/bandeiras-tarifarias">Ver na ANEEL</a></strong><small>em breve aqui</small></div>
+  <div class="tile"><span>IPCA 12 meses</span><strong id="ipca">—</strong><small id="ipcad">Banco Central</small><small class="fut" id="ipca15"></small></div>
+  <div class="tile"><span>Bandeira tarifária</span><strong id="band"><span class="bdot" id="bdot"></span><span id="bnome">—</span></strong><small id="bref">carregando…</small><small class="fut"><a href="https://www.gov.br/aneel/pt-br/assuntos/tarifas/bandeiras-tarifarias">Ver na ANEEL</a></small></div>
 </section>
 
 <section class="cards">
@@ -231,6 +233,13 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     pega('https://api.bcb.gov.br/dados/serie/bcdata.sgs.13522/dados/ultimos/1?formato=json')
       .then(function (j) { set('ipca', br(j[0].valor, 2) + '%'); set('ipcad', 'até ' + j[0].data.slice(3) + ' · Banco Central'); })
       .catch(function () { set('ipca', '—'); });
+    pega('https://api.bcb.gov.br/dados/serie/bcdata.sgs.7478/dados/ultimos/12?formato=json')
+      .then(function (j) {
+        if (!j || !j.length) return;
+        var ac = j.reduce(function (t, x) { return t * (1 + Number(x.valor) / 100); }, 1);
+        var ult = j[j.length - 1], mes = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'][Number(ult.data.slice(3, 5)) - 1];
+        set('ipca15', 'Prévia IPCA-15 ' + mes + ': ' + br(ult.valor, 2) + '%' + (j.length === 12 ? ' · 12m: ' + br((ac - 1) * 100, 2) + '%' : ''));
+      }).catch(function () {});
   }
 
   // ---------- Meus sites (Poderômetro, Inclui+, S2BT, Agenda) ----------
@@ -269,6 +278,17 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
           if (f.euro) set('eurf', 'Futuro ' + f.euro.codigo + ': R$ ' + br(f.euro.valor, 4) + seta(f.euro.variacao) + nota(f.euro));
           if (f.juros) set('selicf', 'DI futuro ' + f.juros.codigo + ': ' + br(f.juros.valor, 2) + '%' + seta(f.juros.variacao) + nota(f.juros));
         }
+        var bd = d.bandeira;
+        if (bd && bd.bandeira) {
+          var nm = String(bd.bandeira), k = nm.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+          var cor = /escassez/.test(k) ? '#1c1c1c' : /vermelha.*2|p2|patamar 2/.test(k) ? '#a3231a' : /vermelha/.test(k) ? '#e04a3f' : /amarela/.test(k) ? '#e8b400' : /verde/.test(k) ? '#3fae62' : '';
+          set('bnome', nm.charAt(0).toUpperCase() + nm.slice(1).toLowerCase());
+          if (cor) document.getElementById('bdot').style.background = cor;
+          var comp = bd.competencia ? String(bd.competencia) : '';
+          var mm = comp.match(/(\d{4})-(\d{2})/) || comp.match(/(\d{2})\/(\d{4})/);
+          var ref = mm ? (mm[1].length === 4 ? mm[2] + '/' + mm[1] : mm[1] + '/' + mm[2]) : '';
+          set('bref', (ref ? ref + ' · ' : '') + (bd.fonte === 'ANEEL' ? 'ANEEL' : 'aguardando confirmação da ANEEL'));
+        } else { set('bref', 'indisponível agora'); }
         lista('l-politica', d.politica, 'As notícias do Poderômetro não carregaram agora. Tente de novo em alguns minutos.');
         lista('l-pcd', d.pcd, 'As notícias do Inclui+ não carregaram agora. Tente de novo em alguns minutos.');
         var g = document.getElementById('globo'), loc = d.local || {};
