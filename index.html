@@ -253,9 +253,10 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
         var f = d.futuros;
         if (f && !f.erro) {
           function seta(v) { return v == null ? '' : (Number(v) >= 0 ? ' ▲ ' : ' ▼ ') + br(Math.abs(v), 2) + '%'; }
-          if (f.dolar) set('usdf', 'Futuro ' + f.dolar.codigo + ': R$ ' + br(f.dolar.valor, 4) + seta(f.dolar.variacao));
-          if (f.euro) set('eurf', 'Futuro ' + f.euro.codigo + ': R$ ' + br(f.euro.valor, 4) + seta(f.euro.variacao));
-          if (f.juros) set('selicf', 'DI futuro ' + f.juros.codigo + ': ' + br(f.juros.valor, 2) + '%' + seta(f.juros.variacao));
+          function nota(q) { return q.base === 'agora' ? '' : q.base === 'ofertas' ? ' (ofertas)' : ' (ajuste de ontem)'; }
+          if (f.dolar) set('usdf', 'Futuro ' + f.dolar.codigo + ': R$ ' + br(f.dolar.valor, 4) + seta(f.dolar.variacao) + nota(f.dolar));
+          if (f.euro) set('eurf', 'Futuro ' + f.euro.codigo + ': R$ ' + br(f.euro.valor, 4) + seta(f.euro.variacao) + nota(f.euro));
+          if (f.juros) set('selicf', 'DI futuro ' + f.juros.codigo + ': ' + br(f.juros.valor, 2) + '%' + seta(f.juros.variacao) + nota(f.juros));
         }
         lista('l-politica', d.politica, 'As notícias do Poderômetro não carregaram agora. Tente de novo em alguns minutos.');
         lista('l-pcd', d.pcd, 'As notícias do Inclui+ não carregaram agora. Tente de novo em alguns minutos.');
