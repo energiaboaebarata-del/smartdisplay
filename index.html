@@ -95,7 +95,8 @@ h2 { margin:0; font-family:Manrope, sans-serif; font-size:20px; font-weight:700;
 .acbotoes { display:flex; gap:8px; }
 .acbotoes button[type=submit] { height:40px; font-size:14px; }
 .acoes li { flex-direction:row; justify-content:space-between; align-items:center; gap:12px; }
-.acoes .cod { font-weight:700; font-size:15px; color:var(--text); }
+.acoes .cod { font-weight:700; font-size:15px; color:var(--text); background:none; border:0; padding:0; height:auto; text-align:left; cursor:pointer; font-family:inherit; }
+.acoes .cod:hover { color:var(--accent); }
 .acoes .nome { display:block; font-size:12px; color:var(--muted); font-weight:400; }
 .acoes .preco { text-align:right; font-variant-numeric:tabular-nums; font-weight:700; font-size:15px; }
 .acoes .var { display:block; font-size:12px; font-weight:600; }
@@ -189,7 +190,7 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
       <div class="acbotoes"><button type="submit">Salvar</button><button type="button" class="editar" id="acPadrao">Voltar ao padrão</button></div>
     </form>
     <ul class="lista acoes" id="l-acoes"><li class="carregando">Carregando…</li></ul>
-    <p class="dica" id="acNota">Cotações da B3 com cerca de 15 min de atraso · clique numa ação para ver o gráfico</p>
+    <p class="dica" id="acNota">Cotações da B3 com cerca de 15 min de atraso · clique numa ação para ver empresa, valor de mercado e gráfico</p>
   </article>
 
 </section>
@@ -200,7 +201,7 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     <div class="topo">
       <div><h3 id="gtitulo">—</h3><div class="resumo" id="gresumo"></div></div>
       <div class="periodos" id="gper">
-        <button type="button" data-m="3">3 meses</button><button type="button" data-m="12" class="on">1 ano</button><button type="button" data-m="60">5 anos</button>
+        <button type="button" data-m="1">1 mês</button><button type="button" data-m="3">3 meses</button><button type="button" data-m="12" class="on">1 ano</button><button type="button" data-m="60">5 anos</button>
         <button type="button" class="fechar" id="gfechar">Fechar ✕</button>
       </div>
     </div>
@@ -401,16 +402,24 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     selic: { nome: 'Selic meta', sgs: 432, fmt: function (v) { return br(v, 2) + '%'; } },
     ipca: { nome: 'IPCA acumulado em 12 meses', sgs: 13522, fmt: function (v) { return br(v, 2) + '%'; } }
   };
-  var gAtual = null, gMeses = 12, gDados = [];
+  var gAtual = null, gMeses = 12, gDados = [], gConf = null;
   function dd(d) { return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear(); }
   function abreGrafico(chave) {
-    gAtual = chave; document.getElementById('gfundo').hidden = false;
-    document.getElementById('gtitulo').textContent = SERIES[chave].nome;
+    gAtual = chave; gConf = SERIES[chave]; document.getElementById('gfundo').hidden = false;
+    document.getElementById('gtitulo').textContent = gConf.nome;
     carregaGrafico(); document.getElementById('gfechar').focus();
   }
+  function abreAcao(cod) {
+    gAtual = 'acao:' + cod; gConf = { nome: cod, fmt: function (v) { return 'R$ ' + br(v, 2); }, acao: cod };
+    document.getElementById('gfundo').hidden = false; document.getElementById('gtitulo').textContent = cod;
+    if (gMeses > 60) gMeses = 12;
+    carregaGrafico(); document.getElementById('gfechar').focus();
+  }
+  function bilhoes(v) { if (v == null) return '—'; return v >= 1e12 ? 'R$ ' + br(v / 1e12, 2) + ' tri' : v >= 1e9 ? 'R$ ' + br(v / 1e9, 1) + ' bi' : 'R$ ' + br(v / 1e6, 0) + ' mi'; }
   function fechaGrafico() { document.getElementById('gfundo').hidden = true; gAtual = null; }
   function carregaGrafico() {
-    var S = SERIES[gAtual], ini = new Date(); ini.setMonth(ini.getMonth() - gMeses);
+    if (gConf && gConf.acao) return carregaAcao();
+    var S = gConf, ini = new Date(); ini.setMonth(ini.getMonth() - gMeses);
     document.getElementById('gresumo').textContent = 'Carregando…'; document.getElementById('gsvg').innerHTML = ''; document.getElementById('gleitura').innerHTML = '&nbsp;';
     document.getElementById('gfonte').textContent = 'Fonte: Banco Central (série ' + S.sgs + ').';
     pega('https://api.bcb.gov.br/dados/serie/bcdata.sgs.' + S.sgs + '/dados?formato=json&dataInicial=' + dd(ini) + '&dataFinal=' + dd(new Date()))
@@ -419,8 +428,23 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
         desenha();
       }).catch(function () { document.getElementById('gresumo').textContent = 'Não carregou agora. Tente de novo em alguns minutos.'; });
   }
+  function carregaAcao() {
+    var cod = gConf.acao, range = gMeses <= 1 ? '1mo' : gMeses <= 3 ? '3mo' : gMeses <= 12 ? '1y' : '5y';
+    document.getElementById('gresumo').textContent = 'Carregando…'; document.getElementById('gsvg').innerHTML = ''; document.getElementById('gleitura').innerHTML = '&nbsp;';
+    document.getElementById('gfonte').innerHTML = 'Fonte: brapi.dev · <a href="https://www.google.com/finance/quote/' + esc(cod) + ':BVMF">ver no Google Finance</a>';
+    pega('/api/acao?t=' + encodeURIComponent(cod) + '&range=' + range).then(function (a) {
+      if (!a || a.erro) throw (a && a.erro) || 'erro';
+      document.getElementById('gtitulo').textContent = cod + ' · ' + a.nome;
+      gConf.extra = 'Valor de mercado: ' + bilhoes(a.valorMercado);
+      gDados = (a.historico || []).map(function (p) { var t = new Date(p.t * 1000); return { t: t, v: Number(p.v), d: dd(t) }; });
+      desenha();
+    }).catch(function (e) {
+      document.getElementById('gresumo').textContent = /chave|BRAPI/.test(String(e)) ? 'Falta configurar a chave da brapi no Cloudflare.' :
+        (range !== '3mo' && range !== '1mo') ? 'Este período não carregou (o plano grátis da brapi pode limitar). Tente 3 meses.' : 'Não carregou agora. Tente de novo em alguns minutos.';
+    });
+  }
   function desenha() {
-    var S = SERIES[gAtual], svg = document.getElementById('gsvg'), d = gDados;
+    var S = gConf, svg = document.getElementById('gsvg'), d = gDados;
     if (d.length < 2) { document.getElementById('gresumo').textContent = 'Sem dados suficientes para este período.'; return; }
     var W = 800, H = 300, P = 10, min = Infinity, max = -Infinity;
     d.forEach(function (x) { if (x.v < min) min = x.v; if (x.v > max) max = x.v; });
@@ -439,7 +463,7 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     svg.style.color = getComputedStyle(document.body).color;
     var vmin = Math.min.apply(null, d.map(function (x) { return x.v; })), vmax = Math.max.apply(null, d.map(function (x) { return x.v; }));
     var ini = d[0].v, fim = d[d.length - 1].v, varp = (fim / ini - 1) * 100;
-    document.getElementById('gresumo').textContent = 'Agora: ' + S.fmt(fim) + ' · no período: ' + (varp >= 0 ? '▲ ' : '▼ ') + br(Math.abs(varp), 2) + '% · mínima ' + S.fmt(vmin) + ' · máxima ' + S.fmt(vmax);
+    document.getElementById('gresumo').textContent = (S.extra ? S.extra + ' · ' : '') + 'Agora: ' + S.fmt(fim) + ' · no período: ' + (varp >= 0 ? '▲ ' : '▼ ') + br(Math.abs(varp), 2) + '% · mínima ' + S.fmt(vmin) + ' · máxima ' + S.fmt(vmax);
     svg.onmousemove = function (e) {
       var r = svg.getBoundingClientRect(), tx = t0 + (t1 - t0) * Math.min(1, Math.max(0, ((e.clientX - r.left) / r.width * W - P) / (W - 2 * P)));
       var best = d[0]; d.forEach(function (x) { if (Math.abs(x.t - tx) < Math.abs(best.t - tx)) best = x; });
@@ -487,7 +511,7 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
   function acDesenha() {
     var el = document.getElementById('l-acoes'), lista = acLista();
     el.innerHTML = lista.map(function (c) {
-      return '<li id="ac-' + esc(c) + '"><a class="cod" href="https://www.google.com/finance/quote/' + esc(c) + ':BVMF">' + esc(c) + '<span class="nome">carregando…</span></a><span class="preco">—<span class="var">&nbsp;</span></span></li>';
+      return '<li id="ac-' + esc(c) + '"><button type="button" class="cod" data-ac="' + esc(c) + '">' + esc(c) + '<span class="nome">carregando…</span></button><span class="preco">—<span class="var">&nbsp;</span></span></li>';
     }).join('');
     lista.forEach(function (c) {
       acCotacao(c).then(function (q) {
@@ -502,6 +526,7 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
       });
     });
   }
+  document.getElementById('l-acoes').addEventListener('click', function (e) { var b = e.target.closest('[data-ac]'); if (b) abreAcao(b.dataset.ac); });
   document.getElementById('acEditar').addEventListener('click', function () {
     var f = document.getElementById('acForm'); f.hidden = !f.hidden;
     if (!f.hidden) { var i = document.getElementById('acCampo'); i.value = acLista().join(', '); i.focus(); }
