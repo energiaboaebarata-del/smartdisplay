@@ -261,6 +261,7 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     pega('/api/painel' + (chave ? '?k=' + encodeURIComponent(chave) : ''))
       .then(function (d) {
         var f = d.futuros;
+        if (!f || f.erro) { futurosPeloNavegador(); f = null; }
         if (f && !f.erro) {
           function seta(v) { return v == null ? '' : (Number(v) >= 0 ? ' ▲ ' : ' ▼ ') + br(Math.abs(v), 2) + '%'; }
           function nota(q) { return q.base === 'agora' ? '' : q.base === 'ofertas' ? ' (ofertas)' : ' (ajuste de ontem)'; }
@@ -288,6 +289,39 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
         ['l-politica', 'l-pcd', 'l-agenda'].forEach(function (id) { document.getElementById(id).innerHTML = '<li class="aviso">Não carregou agora. Tente de novo em alguns minutos.</li>'; });
         var g2 = document.getElementById('globo'); if (g2 && !g2.src) g2.src = '/globo.html?card=1';
       });
+  }
+
+  // ---------- Mercado futuro direto pelo navegador (se o motor não conseguir) ----------
+  var MESES_B3 = { F: 'jan', G: 'fev', H: 'mar', J: 'abr', K: 'mai', M: 'jun', N: 'jul', Q: 'ago', U: 'set', V: 'out', X: 'nov', Z: 'dez' };
+  function rotuloB3(c) { var m = String(c).match(/([FGHJKMNQUVXZ])(\d{2})$/); return m ? MESES_B3[m[1]] + '/' + m[2] : c; }
+  function numB3(v) { return (v == null || v === '' || isNaN(Number(v))) ? null : Number(v); }
+  function futuroB3(ativo, moeda, alvo) {
+    return fetch('https://cotacao.b3.com.br/mds/api/v1/DerivativeQuotation/' + ativo).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (d) {
+      var hoje = new Date().toISOString().slice(0, 10);
+      var lista = (d.Scty || []).map(function (s) {
+        var q = s.SctyQtn || {}, c = numB3(s.buyOffer && s.buyOffer.price), v = numB3(s.sellOffer && s.sellOffer.price);
+        return { codigo: s.symb, venc: s.asset && s.asset.AsstSummry && s.asset.AsstSummry.mtrtyCode, atual: numB3(q.curPrc),
+          meio: c != null && v != null ? (c + v) / 2 : (c != null ? c : v), ajuste: numB3(q.prvsDayAdjstmntPric), variacao: numB3(q.prcFlcn) };
+      }).filter(function (x) { return x.venc && x.venc > hoje; }).sort(function (a, b) { return a.venc.localeCompare(b.venc); });
+      if (alvo) { var i = lista.findIndex(function (x) { return x.codigo === alvo; }); if (i > 0) lista.unshift(lista.splice(i, 1)[0]); }
+      for (var k = 0; k < lista.length; k++) {
+        var x = lista[k], valor = x.atual, base = 'agora';
+        if (valor == null && x.meio != null) { valor = x.meio; base = 'ofertas'; }
+        if (valor == null && moeda && x.ajuste != null) { valor = x.ajuste; base = 'ajuste de ontem'; }
+        if (valor == null) continue;
+        var vr = x.variacao; if (vr == null && moeda && x.ajuste && base !== 'ajuste de ontem') vr = (valor / x.ajuste - 1) * 100;
+        return { codigo: rotuloB3(x.codigo), valor: moeda ? valor / 1000 : valor, variacao: vr, base: base };
+      }
+      return null;
+    });
+  }
+  function futurosPeloNavegador() {
+    function seta(v) { return v == null ? '' : (Number(v) >= 0 ? ' ▲ ' : ' ▼ ') + br(Math.abs(v), 2) + '%'; }
+    function nota(q) { return q.base === 'agora' ? '' : q.base === 'ofertas' ? ' (ofertas)' : ' (ajuste de ontem)'; }
+    futuroB3('DOL', true).then(function (q) { if (q) set('usdf', 'Futuro ' + q.codigo + ': R$ ' + br(q.valor, 4) + seta(q.variacao) + nota(q)); }).catch(function () {});
+    futuroB3('EUR', true).then(function (q) { if (q) set('eurf', 'Futuro ' + q.codigo + ': R$ ' + br(q.valor, 4) + seta(q.variacao) + nota(q)); }).catch(function () {});
+    var anoDI = String(new Date().getFullYear() + 1).slice(2);
+    futuroB3('DI1', false, 'DI1F' + anoDI).then(function (q) { if (q) set('selicf', 'DI futuro ' + q.codigo + ': ' + br(q.valor, 2) + '%' + seta(q.variacao) + nota(q)); }).catch(function () {});
   }
 
   function atualiza() {
