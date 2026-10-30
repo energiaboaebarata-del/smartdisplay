@@ -77,10 +77,16 @@ canvas:active{cursor:grabbing}
 
 /* modo cartão: dentro do SmartDisplay */
 .card .marca,.card .cta,.card .foot,.card .reset{display:none}
-.card .big{font-size:clamp(64px,13vw,128px)}
-.card .crit dd{font-size:clamp(18px,2.4vw,24px)}
-.card .read{bottom:16px;right:16px}
-.card .dist{font-size:16px}
+.card .big{font-size:64px;margin-top:2px}
+.card .crit{margin-top:8px;row-gap:1px}
+.card .crit dt{font-size:11px}
+.card .crit dd{font-size:15px}
+.card .crit{display:none}
+.card .who{display:none}
+.card .read{bottom:12px;right:12px;left:12px;align-items:flex-end}
+.card .dist{font-size:14px}
+.card .cap,.card .who{font-size:10px}
+.card .place{padding:5px 10px;font-size:11px}
 .card .key,.card .sigilo{display:none}
 </style>
 
@@ -183,7 +189,7 @@ const path=d3.geoPath(proj,ctx);
 let rot=[52,14,0], k=1, selected=null, moving=false, idleT=null;
 function resize(){ if(W && innerWidth===W && Math.abs(innerHeight-H)<320 && document.activeElement===document.getElementById("q")) return; DPR=Math.min(devicePixelRatio||1,2); W=innerWidth; H=innerHeight; cv.width=W*DPR; cv.height=H*DPR;
   base=Math.min(W,H)*(W<700?0.47:0.42); draw(); }
-function center(){ return CARD ? (W<700 ? [W/2, H*0.38] : [W*0.38, H/2]) : (W<700 ? [W/2, H*0.40] : [W*0.44, H/2]); }
+function center(){ return CARD ? [W*0.40, H*0.42] : (W<700 ? [W/2, H*0.40] : [W*0.44, H/2]); }
 function hexA(h,a){ const n=parseInt(h.slice(1),16); return `rgba(${n>>16},${(n>>8)&255},${n&255},${a})`; }
 const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const C={}; ["--globe","--land","--border","--state","--accent"].forEach(n=>C[n]=css(n));
