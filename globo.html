@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Globo de ofertas · SmartDisplay</title>
+<meta name="description" content="Globo interativo com o maior desconto de energia por assinatura em cada região do Brasil e as condições de cada oferta. Escolha a sua cidade.">
+<link rel="icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: globo preto domina a tela; leitura do desconto na diagonal inferior direita; busca discreta no topo esquerdo */
+:root{
+  --space:#000000; --globe:#070708; --land:#111214; --border:#34363b; --state:#8d9097; --fg:#f2f2ee; --muted:#8a8c91;
+  --accent:#ffd21f; --line:#2a2b2f; --panel:rgba(0,0,0,.55);
+  --f-num:"Archivo","Arial Narrow",system-ui,sans-serif; --f-ui:"Archivo",system-ui,-apple-system,sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--space);color:var(--fg);font-family:var(--f-ui);overflow:hidden;-webkit-user-select:none;user-select:none}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+canvas:active{cursor:grabbing}
+.pick{position:fixed;z-index:6;right:max(20px,env(safe-area-inset-right,0px));width:min(320px,calc(100% - 40px));
+  background:rgba(8,8,10,.92);border:1px solid var(--line);border-radius:14px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  display:flex;flex-direction:column;overflow:hidden}
+.pick[hidden]{display:none}
+.pick .bar{display:flex;gap:6px;padding:8px;border-bottom:1px solid var(--line);align-items:center}
+.pick input{flex:1;min-width:0;height:34px;box-sizing:border-box;border:1px solid var(--line);border-radius:8px;background:#000;color:var(--fg);padding:0 10px;font:400 16px var(--f-ui)}
+.pick input:focus{outline:1px solid var(--accent);border-color:var(--accent)}
+.pick .tb{height:34px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--fg);font:500 11px var(--f-mono);letter-spacing:.08em;cursor:pointer;white-space:nowrap}
+.pick .tb:focus-visible{outline:1px solid var(--accent)}
+.wbox{position:relative}
+.wheel{position:relative;height:240px;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.wheel::-webkit-scrollbar{display:none}
+.band{position:absolute;left:0;right:0;top:100px;height:40px;pointer-events:none;border-block:1px solid var(--accent);background:rgba(255,210,31,.06)}
+.pad{height:100px}
+.it{height:40px;scroll-snap-align:center;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:0 14px;font:400 15px var(--f-ui);color:var(--muted);cursor:pointer}
+.it.on{color:var(--fg);font-weight:600}
+.it span:last-child{font:500 11px var(--f-mono)}
+.uf-h{height:40px;display:flex;align-items:center;padding:0 14px;font:600 11px var(--f-mono);letter-spacing:.14em;color:var(--accent);text-transform:uppercase}
+.empty{padding:16px 14px;color:var(--muted);font-size:14px}
+.read{position:fixed;z-index:4;right:max(20px,env(safe-area-inset-right,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 22px);
+  text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px;pointer-events:none;max-width:calc(100% - 40px)}
+.place{pointer-events:auto;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;background:var(--panel);padding:7px 12px;font:500 12px var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--fg);cursor:pointer;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+.place:focus-visible{outline:1px solid var(--accent)}
+.place::after{content:"";width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid var(--accent)}
+.dist{font:600 clamp(16px,2.2vw,22px)/1.2 var(--f-ui);font-stretch:85%;color:var(--fg);margin-top:2px}
+.dist small{display:block;font:400 12px var(--f-mono);color:var(--muted);letter-spacing:.02em;margin-top:2px}
+.big{font:800 clamp(92px,17vw,200px)/.86 var(--f-num);font-stretch:68%;color:var(--accent);letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin-top:10px}
+.big sup{font-size:.42em;vertical-align:.95em;margin-left:.04em;letter-spacing:0}
+.big.none{color:var(--muted)}
+.big.c{font-family:var(--f-mono);font-weight:500;font-size:clamp(72px,12vw,140px)}
+.who{font:400 12px var(--f-mono);color:var(--fg);opacity:.75;margin-top:4px;max-width:34ch}
+.cap{font:500 11px var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.crit{display:grid;grid-template-columns:auto auto;column-gap:16px;row-gap:3px;margin-top:14px;align-items:baseline}
+.crit dt{font:400 13px var(--f-ui);color:var(--muted)}
+.crit dd{margin:0;font:700 clamp(22px,3.2vw,34px)/1 var(--f-num);font-stretch:70%;color:var(--fg);font-variant-numeric:tabular-nums;min-width:2.6em}
+.crit dd.c{color:var(--accent);font-family:var(--f-mono);font-weight:500;font-size:clamp(18px,2.4vw,24px)}
+.crit dd.n{color:var(--muted)}
+.key{font:400 10.5px var(--f-mono);color:var(--muted);margin-top:10px;letter-spacing:.04em}
+.foot{position:fixed;z-index:3;left:max(16px,env(safe-area-inset-left,0px));bottom:calc(env(safe-area-inset-bottom,0px) + 18px);
+  font:400 11px/1.5 var(--f-mono);color:var(--muted);max-width:44ch;pointer-events:none}
+.foot b{color:var(--fg);font-weight:500}
+.reset{position:fixed;z-index:5;top:calc(env(safe-area-inset-top,0px) + 14px);right:max(16px,env(safe-area-inset-right,0px));height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--line);background:var(--panel);color:var(--fg);font:500 12px var(--f-mono);letter-spacing:.1em;cursor:pointer}
+.reset:focus-visible{outline:1px solid var(--accent)}
+.marca{position:fixed;z-index:5;top:calc(env(safe-area-inset-top,0px) + 12px);left:max(14px,env(safe-area-inset-left,0px));display:flex;gap:10px;align-items:center;text-decoration:none;color:var(--fg)}
+.marca img{width:38px;height:38px;border-radius:9px}.marca b{display:block;font:700 15px var(--f-ui)}.marca span{display:block;font:400 11px var(--f-mono);color:var(--muted);letter-spacing:.06em}
+.cta{position:fixed;z-index:5;top:calc(env(safe-area-inset-top,0px) + 62px);left:max(14px,env(safe-area-inset-left,0px));display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:18px;background:var(--accent);color:#0B1F3A;font:700 13px var(--f-ui);text-decoration:none}
+.cta:focus-visible{outline:2px solid #fff}
+.carrega{position:fixed;inset:0;z-index:8;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;font:500 12px var(--f-mono);letter-spacing:.12em;color:var(--muted);pointer-events:none}
+.carrega[hidden]{display:none}.carrega i{width:42px;height:42px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--accent);animation:gira 1s linear infinite}
+@keyframes gira{to{transform:rotate(360deg)}}
+.sigilo{font:400 10.5px var(--f-mono);color:var(--muted);margin-top:4px;letter-spacing:.02em}
+@media (max-width:640px){
+  .cta{top:calc(env(safe-area-inset-top,0px) + 58px);height:32px;font-size:12px}
+  .foot{display:none}
+  .crit{column-gap:12px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* modo cartão: dentro do SmartDisplay */
+.card .marca,.card .cta,.card .foot,.card .reset{display:none}
+.card .big{font-size:clamp(64px,13vw,128px)}
+.card .crit dd{font-size:clamp(18px,2.4vw,24px)}
+.card .read{bottom:16px;right:16px}
+.card .dist{font-size:16px}
+.card .key,.card .sigilo{display:none}
+</style>
+
+<canvas id="cv" aria-label="Globo com as áreas das distribuidoras de energia"></canvas>
+<a class="marca" href="https://www.s2bt.com.br/" target="_top" aria-label="Voltar ao site da S2BT Energia"><img src="https://www.s2bt.com.br/static-assets/logo-s2bt.png" alt=""><div><b>S2BT Energia</b><span>OFERTAS PELO BRASIL</span></div></a>
+<a class="cta" href="https://www.s2bt.com.br/simular" target="_top">Simular com a minha conta →</a>
+<div class="carrega" id="carrega"><i></i><span>CARREGANDO O GLOBO…</span></div>
+
+<div class="pick" id="pick" hidden>
+  <div class="bar">
+    <input id="q" type="search" autocomplete="off" placeholder="Buscar cidade ou UF" aria-label="Buscar cidade" hidden>
+    <button class="tb" id="btnBusca" type="button">BUSCAR</button>
+    <button class="tb" id="btnSorte" type="button">SORTEAR</button>
+    <button class="tb" id="btnFecha" type="button" aria-label="Fechar lista">✕</button>
+  </div>
+  <div class="wbox"><div class="wheel" id="wheel" role="listbox" aria-label="Municípios por estado"></div><div class="band" id="band"></div></div>
+</div>
+<button class="reset" id="reset" aria-label="Ver o Brasil inteiro">BR</button>
+
+<div class="read" id="read" aria-live="polite"></div>
+
+<div class="foot" id="foot"><b>RJ</b> município a município · demais estados por estado (provisório)<br>Ofertas atualizadas em <span id="data-of">—</span> · c = confirmar · - = sem oferta</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script>
+const CARD=new URLSearchParams(location.search).has("card"); if(CARD) document.documentElement.classList.add("card");
+let RAW={world:[],states:[],muns:[]};
+
+/* ---------- Distribuidoras ---------- */
+const D = {
+  light:"Light", enelrj:"Enel Rio", enfr:"Energisa Minas Rio",
+  ac:"Energisa Acre", al:"Equatorial Alagoas", ap:"CEA Equatorial", am:"Amazonas Energia", ba:"Neoenergia Coelba",
+  ce:"Enel Ceará", df:"Neoenergia Brasília", es:"EDP Espírito Santo", go:"Equatorial Goiás", ma:"Equatorial Maranhão",
+  mt:"Energisa Mato Grosso", ms:"Energisa Mato Grosso do Sul", mg:"Cemig", pa:"Equatorial Pará", pb:"Energisa Paraíba",
+  pr:"Copel", pe:"Neoenergia Pernambuco", pi:"Equatorial Piauí", rn:"Neoenergia Cosern", ro:"Energisa Rondônia",
+  rr:"Roraima Energia", sc:"Celesc", se:"Energisa Sergipe", to:"Energisa Tocantins",
+  sp:"Várias distribuidoras (SP)", rs:"Várias distribuidoras (RS)"
+};
+const GROUP = { light:"#e8b400", enelrj:"#d23f8f", enfr:"#f28a2c", ac:"#f28a2c", al:"#2f74d0", ap:"#2f74d0", am:"#9b6fc4", ba:"#3fae62",
+  ce:"#d23f8f", df:"#3fae62", es:"#e04a3f", go:"#2f74d0", ma:"#2f74d0", mt:"#f28a2c", ms:"#f28a2c", mg:"#6066d0", pa:"#2f74d0",
+  pb:"#f28a2c", pr:"#1fa3ad", pe:"#3fae62", pi:"#2f74d0", rn:"#3fae62", ro:"#f28a2c", rr:"#b08a52", sc:"#84b443", se:"#f28a2c",
+  to:"#f28a2c", sp:"#7d8494", rs:"#7d8494" };
+/* RJ: fontes Light (31 municípios) e Enel Rio (65); 4 compartilhados; Nova Friburgo majoritariamente Energisa */
+const RJ_LIGHT = "Belford Roxo,Japeri,Mesquita,Nilópolis,Nova Iguaçu,Paracambi,Queimados,São João de Meriti,Itaguaí,Rio Claro,Rio de Janeiro,Seropédica,Barra do Piraí,Barra Mansa,Comendador Levy Gasparian,Engenheiro Paulo de Frontin,Mendes,Miguel Pereira,Paty do Alferes,Pinheiral,Piraí,Quatis,Rio das Flores,Sapucaia,Valença,Vassouras,Volta Redonda";
+const RJ_SHARED = "Duque de Caxias,Carmo,Três Rios,Paraíba do Sul";
+const norm = s => s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/'/g,"");
+const setOf = s => new Set(s.split(",").map(norm));
+const sLight = setOf(RJ_LIGHT), sShared = setOf(RJ_SHARED);
+function distOf(m){
+  if(m.uf==="RJ"){
+    const k=norm(m.name);
+    if(sLight.has(k)) return {main:"light", all:["light"]};
+    if(sShared.has(k)) return {main:"light", all:["light","enelrj"], note:"Light e Enel Rio dividem o município · confirmar pelo endereço"};
+    if(k==="nova friburgo") return {main:"enfr", all:["enfr","enelrj"], note:"Energisa na maior parte · Enel Rio em parte do município"};
+    return {main:"enelrj", all:["enelrj"]};
+  }
+  const k=m.uf.toLowerCase();
+  return {main:k, all:[k], prov:true};
+}
+
+/* ---------- Ofertas: planilha "S2BT - Ofertas por estado e concessionária" de 24/10/2026 ----------
+   d = desconto máximo %; critérios: true = aceita, false = não aceita, null = confirmar */
+let OF={ufs:{},ver_usinas:false};      // vem de /publico/vitrine/globo-ofertas (o nome da usina só para quem o administrador liberou)
+const RJ_CON={light:"Light",enelrj:"Enel RJ",enfr:"Energisa Minas Rio"};
+function conDe(k){ if(RJ_CON[k]){ const n=RJ_CON[k], uf=(OF.ufs.RJ||{})[n]?"RJ":Object.keys(OF.ufs).find(u=>(OF.ufs[u]||{})[n]); return uf?[[uf,n]]:[]; }
+  const uf=k.toUpperCase(); return Object.keys(OF.ufs[uf]||{}).sort().map(n=>[uf,n]); }
+function nomeDist(k){ const c=RJ_CON[k]?[]:conDe(k); return c.length>1?(c.length===2?c.map(x=>x[1]).join(" / "):`Várias distribuidoras (${k.toUpperCase()})`):(D[k]||(c[0]||[])[1]||k); }
+const CRIT = [["inj","Aceita injeção"],["prot","Aceita protocolo"],["fat","Fatura unificada"],["deb","Débito em conta"]];
+function leitura(all){
+  const offs = all.flatMap(k => conDe(k).flatMap(([uf,c]) => ((OF.ufs[uf]||{})[c]||[]).map(o=>({...o,con:c}))));
+  const num = offs.filter(o=>o.d!=null);
+  const top = num.length ? num.reduce((a,b)=>b.d>a.d?b:a) : null;
+  const crit = CRIT.map(([k,label])=>{
+    const yes = offs.filter(o=>o[k]===true), yesN = yes.filter(o=>o.d!=null);
+    if(yesN.length) return [label, Math.max(...yesN.map(o=>o.d))];
+    if(yes.length || offs.some(o=>o[k]===null)) return [label,"c"];
+    return [label,"-"];
+  });
+  return {top, n:offs.length, consulta:!top && offs.length>0, crit};
+}
+
+/* ---------- Geometria ---------- */
+function dec(polys){ return polys.map(rings=>{
+  const pg=rings.map(r=>{ const out=[]; let x=0,y=0; for(let i=0;i<r.length;i+=2){ x+=r[i]; y+=r[i+1]; out.push([x/1000,y/1000]); } return out; });
+  if(d3.geoArea({type:"Polygon",coordinates:pg})>2*Math.PI) pg.forEach(r=>r.reverse()); // ilhotas simplificadas: corrige o sentido
+  return pg; }); }
+const feat = (polys,props) => ({type:"Feature",properties:props,geometry:{type:"MultiPolygon",coordinates:dec(polys)}});
+let world = RAW.world.map(w=>feat(w[1],{n:w[0]}));
+let states = RAW.states.map(s=>feat(s[2],{uf:s[0],n:s[1]}));
+let muns = RAW.muns.map(m=>{ const f=feat(m[3],{}); const o={id:m[0],name:m[1],uf:m[2],f}; o.b=d3.geoBounds(f); o.c=d3.geoCentroid(f); o.dist=distOf(o); return o; });
+let rjMuns = muns.filter(m=>m.uf==="RJ");
+let worldMesh = {type:"FeatureCollection",features:world};
+let brOutline = {type:"FeatureCollection",features:states};
+
+/* ---------- Canvas / projeção ---------- */
+const cv=document.getElementById("cv"), ctx=cv.getContext("2d");
+let W,H,DPR,base;
+const proj=d3.geoOrthographic().precision(0.3).clipAngle(90);
+const path=d3.geoPath(proj,ctx);
+let rot=[52,14,0], k=1, selected=null, moving=false, idleT=null;
+function resize(){ if(W && innerWidth===W && Math.abs(innerHeight-H)<320 && document.activeElement===document.getElementById("q")) return; DPR=Math.min(devicePixelRatio||1,2); W=innerWidth; H=innerHeight; cv.width=W*DPR; cv.height=H*DPR;
+  base=Math.min(W,H)*(W<700?0.47:0.42); draw(); }
+function center(){ return CARD ? (W<700 ? [W/2, H*0.38] : [W*0.38, H/2]) : (W<700 ? [W/2, H*0.40] : [W*0.44, H/2]); }
+function hexA(h,a){ const n=parseInt(h.slice(1),16); return `rgba(${n>>16},${(n>>8)&255},${n&255},${a})`; }
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const C={}; ["--globe","--land","--border","--state","--accent"].forEach(n=>C[n]=css(n));
+
+function visible(m){ // centro no hemisfério visível e dentro da tela
+  const r=d3.geoDistance(m.c,[-rot[0],-rot[1]]); if(r>1.62) return false;
+  const p=proj(m.c); if(!p) return false; const pad=200; return p[0]>-pad&&p[0]<W+pad&&p[1]>-pad&&p[1]<H+pad;
+}
+function draw(){
+  const [cx,cy]=center();
+  proj.translate([cx,cy]).scale(base*k).rotate(rot);
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.fillStyle="#000"; ctx.fillRect(0,0,W,H);
+  // halo
+  const R=base*k, g=ctx.createRadialGradient(cx,cy,R*0.98,cx,cy,R*1.12);
+  g.addColorStop(0,"rgba(255,210,31,0.10)"); g.addColorStop(1,"rgba(255,210,31,0)");
+  ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,R*1.12,0,7); ctx.fill();
+  // esfera
+  ctx.beginPath(); path({type:"Sphere"}); ctx.fillStyle=C["--globe"]; ctx.fill();
+  ctx.lineWidth=1; ctx.strokeStyle="#1d1e22"; ctx.stroke();
+  // países
+  ctx.beginPath(); path(worldMesh); ctx.fillStyle=C["--land"]; ctx.fill();
+  ctx.lineWidth=0.6; ctx.strokeStyle=C["--border"]; ctx.stroke();
+  // estados: preenchimento pela distribuidora (provisório fora do RJ)
+  states.forEach(s=>{ const key=s.properties.uf.toLowerCase(); if(key==="rj") return;
+    ctx.beginPath(); path(s); ctx.fillStyle=hexA(GROUP[key],0.30); ctx.fill(); });
+  // RJ município a município
+  rjMuns.forEach(m=>{ ctx.beginPath(); path(m.f); ctx.fillStyle=hexA(GROUP[m.dist.main],0.55); ctx.fill();
+    if(m.dist.all.length>1){ ctx.save(); ctx.clip(); ctx.strokeStyle=hexA(GROUP[m.dist.all[1]],0.8); ctx.lineWidth=1.2;
+      const p=proj(m.c); if(p){ for(let i=-60;i<60;i+=5){ ctx.beginPath(); ctx.moveTo(p[0]+i-40,p[1]-40); ctx.lineTo(p[0]+i+40,p[1]+40); ctx.stroke(); } } ctx.restore(); } });
+  // divisas municipais (aparecem com o zoom)
+  const zoomA = Math.max(0,Math.min(1,(k-2.5)/7));
+  if(zoomA>0 && !moving){
+    ctx.beginPath(); muns.forEach(m=>{ if(visible(m)) path(m.f); });
+    ctx.lineWidth=0.5; ctx.strokeStyle=`rgba(255,255,255,${0.04+0.16*zoomA})`; ctx.stroke();
+  } else if(zoomA>0){
+    ctx.beginPath(); rjMuns.forEach(m=>path(m.f)); ctx.lineWidth=0.5; ctx.strokeStyle=`rgba(255,255,255,${0.07+0.18*zoomA})`; ctx.stroke();
+  }
+  // divisas estaduais e contorno do Brasil
+  ctx.beginPath(); path(brOutline); ctx.lineWidth=0.9; ctx.strokeStyle=C["--state"]; ctx.stroke();
+  // selecionado
+  if(selected){ ctx.beginPath(); path(selected.f); ctx.fillStyle="rgba(255,210,31,0.28)"; ctx.fill();
+    ctx.lineWidth=1.8; ctx.strokeStyle=C["--accent"]; ctx.stroke(); }
+}
+function settle(){ moving=true; clearTimeout(idleT); idleT=setTimeout(()=>{ moving=false; draw(); },140); }
+
+/* ---------- Gestos: arrastar gira, pinça/roda aproxima ---------- */
+const zoom=d3.zoom().scaleExtent([0.7,140]).filter(e=>!e.button && (!CARD || e.type!=="wheel" || e.ctrlKey))
+  .on("zoom",e=>{
+    const t=e.transform;
+    if(e.sourceEvent){ const se=e.sourceEvent;
+      if(last){ const dx=t.x-last.x, dy=t.y-last.y; if(t.k===last.k){ const f=57.3/(base*t.k);
+          rot=[rot[0]+dx*f, Math.max(-85,Math.min(85,rot[1]-dy*f)), 0]; } }
+    }
+    last={x:t.x,y:t.y,k:t.k}; k=t.k; settle(); draw();
+  });
+let last=null;
+d3.select(cv).call(zoom).on("dblclick.zoom",null);
+function setK(nk){ last=null; d3.select(cv).call(zoom.transform,d3.zoomIdentity.scale(nk)); }
+
+function flyTo(lonlat,nk,ms=1000){
+  const r0=rot.slice(), r1=[-lonlat[0],-lonlat[1],0], k0=k, iR=d3.interpolate(r0,r1), iK=d3.interpolate(k0,nk);
+  d3.select(cv).interrupt();
+  d3.transition().duration(matchMedia("(prefers-reduced-motion: reduce)").matches?0:ms).ease(d3.easeCubicInOut)
+    .tween("fly",()=>t=>{ rot=iR(t); k=iK(t); moving=t<1; draw(); })
+    .on("end",()=>{ moving=false; setK(nk); draw(); });
+}
+
+/* ---------- Toque num município ---------- */
+let downAt=null;
+cv.addEventListener("pointerdown",e=>downAt=[e.clientX,e.clientY]);
+cv.addEventListener("pointerup",e=>{
+  if(!downAt) return; const moved=Math.hypot(e.clientX-downAt[0],e.clientY-downAt[1]); downAt=null; if(moved>6) return;
+  const ll=proj.invert([e.clientX,e.clientY]); if(!ll || d3.geoDistance(ll,[-rot[0],-rot[1]])>1.57) return;
+  const hit=muns.find(m=>{ const b=m.b; return ll[0]>=b[0][0]&&ll[0]<=b[1][0]&&ll[1]>=b[0][1]&&ll[1]<=b[1][1]&&d3.geoContains(m.f,ll); });
+  if(hit) select(hit);
+});
+
+/* ---------- Leitura (diagonal inferior direita) ---------- */
+const all2=d=>d.all.some(k=>conDe(k).length>1)||d.all.length>1;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function select(m, fly=true){
+  selected=m;
+  const d=m.dist, L=leitura(d.all);
+  const distTxt = d.all.map(nomeDist).join(" / ");
+  const note = d.note || (d.prov ? (conDe(d.main).length>1 ? "estado dividido · ofertas de todas as distribuidoras do estado" : "área por estado · provisório") : "");
+  const big = L.top ? `<div class="big">${L.top.d}<sup>%</sup></div>` : L.consulta ? `<div class="big c">c</div>` : `<div class="big none">-</div>`;
+  const who = L.top ? `${esc(L.top.u||L.top.rot)}${L.top.tipo==="V"&&L.top.obs?" · "+esc(L.top.obs.split(";")[0]):""}${L.top.obs&&L.top.tipo!=="V"?" · "+esc(L.top.obs):""}${all2(d)?" · "+esc(L.top.con):""}` : (L.n? "ofertas sob consulta" : "nenhuma oferta cadastrada");
+  document.getElementById("read").innerHTML = `
+    <button class="place" id="place" type="button" aria-haspopup="listbox" aria-label="Escolher município (toque duplo para digitar)">${esc(m.name)} · ${m.uf}</button>
+    <div class="dist">${esc(distTxt)}${note?`<small>${esc(note)}</small>`:""}</div>
+    ${big}
+    <div class="cap">maior desconto na região${L.n?` · ${L.n} ${L.n===1?"oferta":"ofertas"}`:""}</div>
+    <div class="who">${who}</div>
+    <dl class="crit">${L.crit.map(([l,v])=>`<dt>${l}</dt><dd class="${v==="c"?"c":v==="-"?"n":""}">${v==="c"||v==="-"?v:v+"%"}</dd>`).join("")}</dl>
+    <div class="key">c confirmar · - sem oferta</div>${OF.ver_usinas?"":`<div class="sigilo">O nome da usina aparece para parceiros autorizados.</div>`}`;
+  if(!pick.hidden) requestAnimationFrame(placePick);
+  if(fly){ const span=Math.max(m.b[1][0]-m.b[0][0], m.b[1][1]-m.b[0][1]); const nk=Math.max(5,Math.min(110, 24/Math.max(span,0.12)));
+    flyTo(m.c, nk); } else draw();
+}
+
+/* ---------- Busca ---------- */
+/* ---------- Lista suspensa no nome do município ---------- */
+const UFNOME={AC:"Acre",AL:"Alagoas",AP:"Amapá",AM:"Amazonas",BA:"Bahia",CE:"Ceará",DF:"Distrito Federal",ES:"Espírito Santo",GO:"Goiás",MA:"Maranhão",MT:"Mato Grosso",MS:"Mato Grosso do Sul",MG:"Minas Gerais",PA:"Pará",PB:"Paraíba",PR:"Paraná",PE:"Pernambuco",PI:"Piauí",RJ:"Rio de Janeiro",RN:"Rio Grande do Norte",RS:"Rio Grande do Sul",RO:"Rondônia",RR:"Roraima",SC:"Santa Catarina",SP:"São Paulo",SE:"Sergipe",TO:"Tocantins"};
+let sorted=muns.slice().sort((a,b)=>a.uf.localeCompare(b.uf)||a.name.localeCompare(b.name,"pt"));
+const pick=document.getElementById("pick"), wheel=document.getElementById("wheel"), q=document.getElementById("q"), read=document.getElementById("read");
+let rows=[], scrollT=null, programmatic=false;
+function buildList(filter){
+  const t=norm(filter||"");
+  const list=t ? sorted.filter(m=>norm(m.name).includes(t)||m.uf.toLowerCase()===t||norm(UFNOME[m.uf]).startsWith(t)) : sorted;
+  let html='<div class="pad"></div>', uf=null; rows=[];
+  list.forEach(m=>{ if(m.uf!==uf){ uf=m.uf; html+=`<div class="uf-h">${UFNOME[uf]} · ${uf}</div>`; }
+    html+=`<div class="it" role="option" data-id="${m.id}"><span>${esc(m.name)}</span><span>${m.uf}</span></div>`; });
+  html+= list.length ? '<div class="pad"></div>' : '<div class="empty">Nenhuma cidade encontrada. Tente parte do nome ou a sigla do estado.</div>';
+  wheel.innerHTML=html;
+  rows=[...wheel.querySelectorAll(".it")];
+}
+let byId=Object.fromEntries(muns.map(m=>[m.id,m]));
+function centerRow(){ const mid=wheel.scrollTop+wheel.clientHeight/2; let best=null,bd=1e9;
+  rows.forEach(r=>{ const d=Math.abs(r.offsetTop+20-mid); if(d<bd){bd=d;best=r;} }); return best; }
+function mark(r){ rows.forEach(x=>x.classList.toggle("on",x===r)); }
+function scrollToId(id,smooth){ const r=rows.find(x=>x.dataset.id===id); if(!r) return; programmatic=true;
+  wheel.scrollTo({top:r.offsetTop+20-wheel.clientHeight/2,behavior:smooth?"smooth":"auto"}); mark(r); setTimeout(()=>programmatic=false,smooth?600:50); }
+wheel.addEventListener("scroll",()=>{ const r=centerRow(); mark(r); if(programmatic) return;
+  clearTimeout(scrollT); scrollT=setTimeout(()=>{ const c=centerRow(); if(c && (!selected||selected.id!==c.dataset.id)) select(byId[c.dataset.id]); },260); });
+wheel.addEventListener("click",e=>{ const r=e.target.closest(".it"); if(!r) return; scrollToId(r.dataset.id,true); select(byId[r.dataset.id]); setTimeout(closePick,350); });
+function placePick(){
+  const vv=window.visualViewport, kb = vv ? Math.max(0, innerHeight - vv.height - vv.offsetTop) : 0;
+  const typing = document.activeElement===q && kb>80;
+  read.style.visibility = typing ? "hidden" : "";
+  const bottom = typing ? kb+12 : read.offsetHeight + 30 + parseFloat(getComputedStyle(read).bottom||0) - 8;
+  pick.style.bottom = bottom+"px";
+  const avail = (vv?vv.height:innerHeight) - (typing?12:bottom - kb) - 70;
+  wheel.style.height = Math.max(120, Math.min(240, avail - 52))+"px";
+  const h=parseFloat(wheel.style.height); wheel.querySelectorAll(".pad").forEach(p=>p.style.height=(h/2-20)+"px");
+  const band=document.getElementById("band"); if(band) band.style.top=(h/2-20)+"px";
+}
+function openPick(search){
+  if(pick.hidden){ q.value=""; q.hidden=true; buildList(""); pick.hidden=false; placePick(); if(selected) scrollToId(selected.id,false); }
+  if(search){ q.hidden=false; q.focus(); setTimeout(placePick,350); }
+}
+function closePick(){ pick.hidden=true; q.blur(); read.style.visibility=""; }
+let lastTap=0;
+read.addEventListener("click",e=>{ if(!e.target.closest("#place")) return; const now=Date.now();
+  if(now-lastTap<350){ openPick(true); } else { openPick(false); } lastTap=now; });
+document.getElementById("btnBusca").onclick=()=>openPick(true);
+document.getElementById("btnFecha").onclick=closePick;
+document.getElementById("btnSorte").onclick=()=>{ if(!rows.length) return; const r=rows[Math.floor(Math.random()*rows.length)]; scrollToId(r.dataset.id,true); select(byId[r.dataset.id]); };
+q.addEventListener("input",()=>{ buildList(q.value); placePick(); if(rows[0]) scrollToId(rows[0].dataset.id,false); });
+q.addEventListener("keydown",e=>{ if(e.key==="Enter"){ const r=centerRow(); if(r){ select(byId[r.dataset.id]); closePick(); } } if(e.key==="Escape") closePick(); });
+document.addEventListener("pointerdown",e=>{ if(!pick.hidden && !e.target.closest("#pick") && !e.target.closest("#place")) closePick(); });
+if(window.visualViewport) visualViewport.addEventListener("resize",()=>{ if(!pick.hidden) placePick(); });
+document.getElementById("reset").onclick=()=>flyTo([-52,-14],1,900);
+
+addEventListener("resize",resize);
+async function iniciar(){
+    const pedeOf=fetch("/api/globo?parte=ofertas").then(r=>r.ok?r.json():null).catch(()=>null);
+  const pedeMun=fetch("/api/globo?parte=municipios").then(r=>r.ok?r.json():null).catch(()=>null);
+  const base=await fetch("/api/globo?parte=base").then(r=>r.ok?r.json():null).catch(()=>null);
+  if(base){ world=base.world.map(w=>feat(w[1],{n:w[0]})); states=base.states.map(s=>feat(s[2],{uf:s[0],n:s[1]}));
+    worldMesh={type:"FeatureCollection",features:world}; brOutline={type:"FeatureCollection",features:states}; }
+  resize();
+  const of=await pedeOf; if(of){ OF=of; document.getElementById("data-of").textContent=of.data||""; }
+  const mu=await pedeMun;
+  document.getElementById("carrega").hidden=true;
+  if(!base||!mu){ document.getElementById("read").innerHTML='<div class="dist">Não foi possível carregar o globo agora.<small>Confira a internet e recarregue a página.</small></div>'; return; }
+  muns=mu.muns.map(m=>{ const f=feat(m[3],{}); const o={id:m[0],name:m[1],uf:m[2],f}; o.b=d3.geoBounds(f); o.c=d3.geoCentroid(f); o.dist=distOf(o); return o; });
+  rjMuns=muns.filter(m=>m.uf==="RJ"); sorted=muns.slice().sort((a,b)=>a.uf.localeCompare(b.uf)||a.name.localeCompare(b.name,"pt"));
+  byId=Object.fromEntries(muns.map(m=>[m.id,m]));
+  const P=new URLSearchParams(location.search), cid=norm(P.get("cidade")||""), ufP=(P.get("uf")||"").toUpperCase();
+  const rio=(cid && muns.find(m=>norm(m.name)===cid && (!ufP||m.uf===ufP))) || muns.find(m=>m.id==="3304557");
+  if(rio){ select(rio,false); const sp=Math.max(0.3,Math.max(rio.b[1][0]-rio.b[0][0], rio.b[1][1]-rio.b[0][1])); const nk=Math.max(5,Math.min(60,16/sp));
+    setTimeout(()=>flyTo([rio.c[0]+0.8*sp,rio.c[1]+0.7*sp],nk,2200),400); } else draw();
+}
+iniciar();
+</script>
+
+</body></html>
