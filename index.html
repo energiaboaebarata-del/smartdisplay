@@ -65,6 +65,12 @@ h2 { margin:0; font-family:Manrope, sans-serif; font-size:20px; font-weight:700;
 .oferta .linha:last-child { border-bottom:0; padding-bottom:0; }
 .oferta .big { font-family:Manrope, sans-serif; font-size:30px; font-weight:800; color:var(--accent); white-space:nowrap; }
 .oferta .nome { font-size:15px; font-weight:600; }
+.globo-card { grid-column: span 2; }
+.globo-box { height:440px; border-radius:14px; overflow:hidden; background:#000; }
+.globo-box iframe { width:100%; height:100%; border:0; display:block; }
+.dica { margin:0; font-size:12px; color:var(--muted); }
+.links { display:flex; flex-wrap:wrap; gap:20px; }
+@media (max-width:760px){ .globo-card { grid-column: auto; } .globo-box { height:380px; } }
 footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; padding-top:12px; border-top:1px solid var(--border); font-size:13px; color:var(--muted); }
 @media (max-width:600px){ h1{font-size:30px} .cards{grid-template-columns:1fr} }
 </style>
@@ -117,6 +123,19 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
 
 <section class="cards">
 
+  <article class="globo-card">
+    <div class="head"><h2>Melhor oferta perto de você</h2><span class="tag"><span class="dot" style="background:#D4B062"></span>S2BT</span></div>
+    <div class="globo-box"><iframe id="globo" title="Globo com a melhor oferta de energia por assinatura na sua cidade" loading="lazy"></iframe></div>
+    <p class="dica">Arraste para girar · Ctrl + rodinha para aproximar · toque no nome da cidade para trocar</p>
+    <div class="links"><a class="more" href="https://www.s2bt.com.br/simular">Abrir o simulador →</a><a class="more" href="https://www.s2bt.com.br/globo">Globo em tela cheia →</a></div>
+  </article>
+
+  <article>
+    <div class="head"><h2>Hoje</h2><span class="tag"><span class="dot" style="background:#E08F5A"></span>Google Agenda</span></div>
+    <ul class="lista agenda" id="l-agenda"><li class="carregando">Carregando…</li></ul>
+    <a class="more" href="https://calendar.google.com/calendar/r/day">Abrir a agenda de hoje →</a>
+  </article>
+
   <article>
     <div class="head"><h2>Política</h2><span class="tag"><span class="dot" style="background:#6F9BE8"></span>Poderômetro</span></div>
     <ul class="lista" id="l-politica"><li class="carregando">Carregando…</li></ul>
@@ -129,17 +148,9 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     <a class="more" href="https://pcd.s2bt.com.br">Abrir o Inclui+ →</a>
   </article>
 
-  <article>
-    <div class="head"><h2>Melhor oferta perto de você</h2><span class="tag"><span class="dot" style="background:#D4B062"></span>S2BT</span></div>
-    <div id="l-oferta"><p class="carregando">Carregando…</p></div>
-    <a class="more" href="https://www.s2bt.com.br">Abrir o simulador →</a>
-  </article>
 
-  <article>
-    <div class="head"><h2>Hoje</h2><span class="tag"><span class="dot" style="background:#E08F5A"></span>Google Agenda</span></div>
-    <ul class="lista agenda" id="l-agenda"><li class="carregando">Carregando…</li></ul>
-    <a class="more" href="https://calendar.google.com/calendar/r/day">Abrir a agenda de hoje →</a>
-  </article>
+
+
 
   <article>
     <div class="head"><h2>Finanças</h2><span class="tag"><span class="dot" style="background:#9C86E0"></span>Em breve</span></div>
@@ -260,14 +271,8 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
         }
         lista('l-politica', d.politica, 'As notícias do Poderômetro não carregaram agora. Tente de novo em alguns minutos.');
         lista('l-pcd', d.pcd, 'As notícias do Inclui+ não carregaram agora. Tente de novo em alguns minutos.');
-        var o = d.oferta, box = document.getElementById('l-oferta');
-        if (!o || o.erro || !o.distribuidoras || !o.distribuidoras.length) {
-          box.innerHTML = '<p class="aviso">Não encontrei ofertas para o seu estado agora. Abra o simulador para ver todas.</p>';
-        } else {
-          box.innerHTML = '<div class="oferta">' + o.distribuidoras.map(function (x) {
-            return '<div class="linha"><div><div class="nome">' + esc(x.distribuidora) + ' · ' + esc(o.uf) + '</div><span class="meta" style="font-size:12px;color:var(--muted)">' + x.opcoes + (x.opcoes > 1 ? ' ofertas' : ' oferta') + ' na praça</span></div><span class="big">' + esc(x.texto) + '</span></div>';
-          }).join('') + '</div>';
-        }
+        var g = document.getElementById('globo'), loc = d.local || {};
+        if (g && !g.src) g.src = '/globo.html?card=1' + (loc.cidade ? '&cidade=' + encodeURIComponent(loc.cidade) : '') + (loc.uf ? '&uf=' + encodeURIComponent(loc.uf) : '');
         var a = d.agenda, el = document.getElementById('l-agenda');
         if (a && a.bloqueada) {
           el.innerHTML = '<li class="aviso">' + (a.configurada ? 'Abra o SmartDisplay pelo seu link pessoal para ver a agenda.' : 'A agenda ainda não foi ligada. Falta um passo de configuração.') + '</li>';
@@ -282,7 +287,7 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
       })
       .catch(function () {
         ['l-politica', 'l-pcd', 'l-agenda'].forEach(function (id) { document.getElementById(id).innerHTML = '<li class="aviso">Não carregou agora. Tente de novo em alguns minutos.</li>'; });
-        document.getElementById('l-oferta').innerHTML = '<p class="aviso">Não carregou agora.</p>';
+        var g2 = document.getElementById('globo'); if (g2 && !g2.src) g2.src = '/globo.html?card=1';
       });
   }
 
