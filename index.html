@@ -72,6 +72,21 @@ h2 { margin:0; font-family:Manrope, sans-serif; font-size:20px; font-weight:700;
 .dica { margin:0; font-size:12px; color:var(--muted); }
 .links { display:flex; flex-wrap:wrap; gap:20px; }
 
+.tile.clicavel { cursor:pointer; transition:border-color .15s, transform .15s; }
+.tile.clicavel:hover, .tile.clicavel:focus-visible { border-color:var(--accent); outline:none; }
+.grafico-fundo { position:fixed; inset:0; background:rgba(0,0,0,.55); display:flex; align-items:center; justify-content:center; padding:16px; z-index:50; }
+.grafico-fundo[hidden] { display:none; }
+.grafico { background:var(--surface); border:1px solid var(--border); border-radius:18px; width:min(880px,100%); padding:24px; display:flex; flex-direction:column; gap:14px; }
+.grafico .topo { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
+.grafico h3 { margin:0; font-family:Manrope, sans-serif; font-size:22px; }
+.grafico .resumo { font-size:13px; color:var(--muted); margin-top:4px; }
+.grafico .periodos { display:flex; gap:6px; }
+.grafico .periodos button { height:36px; padding:0 12px; font-size:13px; border-radius:10px; background:transparent; color:var(--text); border:1px solid var(--border); font-weight:600; }
+.grafico .periodos button.on { background:var(--btn); color:var(--btnText); border-color:var(--btn); }
+.grafico .fechar { height:36px; padding:0 14px; font-size:13px; border-radius:10px; background:transparent; color:var(--muted); border:1px solid var(--border); }
+.grafico svg { width:100%; height:300px; display:block; }
+.grafico .leitura { font-size:14px; font-weight:700; min-height:20px; }
+.grafico .fonte { font-size:12px; color:var(--muted); }
 footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; padding-top:12px; border-top:1px solid var(--border); font-size:13px; color:var(--muted); }
 @media (max-width:600px){ h1{font-size:30px} .cards{grid-template-columns:1fr} }
 </style>
@@ -115,10 +130,10 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
 </nav>
 
 <section class="ind" aria-label="Indicadores econômicos">
-  <div class="tile"><span>Dólar</span><strong id="usd">—</strong><small id="usdv">carregando…</small><small class="fut" id="usdf"></small></div>
-  <div class="tile"><span>Euro</span><strong id="eur">—</strong><small id="eurv">carregando…</small><small class="fut" id="eurf"></small></div>
-  <div class="tile"><span>Selic (meta)</span><strong id="selic">—</strong><small>ao ano · Banco Central</small><small class="fut" id="selicf"></small></div>
-  <div class="tile"><span>IPCA 12 meses</span><strong id="ipca">—</strong><small id="ipcad">Banco Central</small><small class="fut" id="ipca15"></small></div>
+  <div class="tile clicavel" data-serie="dolar" role="button" tabindex="0" aria-label="Ver gráfico de Dólar"><span>Dólar</span><strong id="usd">—</strong><small id="usdv">carregando…</small><small class="fut" id="usdf"></small></div>
+  <div class="tile clicavel" data-serie="euro" role="button" tabindex="0" aria-label="Ver gráfico de Euro"><span>Euro</span><strong id="eur">—</strong><small id="eurv">carregando…</small><small class="fut" id="eurf"></small></div>
+  <div class="tile clicavel" data-serie="selic" role="button" tabindex="0" aria-label="Ver gráfico de Selic (meta)"><span>Selic (meta)</span><strong id="selic">—</strong><small>ao ano · Banco Central</small><small class="fut" id="selicf"></small></div>
+  <div class="tile clicavel" data-serie="ipca" role="button" tabindex="0" aria-label="Ver gráfico de IPCA 12 meses"><span>IPCA 12 meses</span><strong id="ipca">—</strong><small id="ipcad">Banco Central</small><small class="fut" id="ipca15"></small></div>
   <div class="tile"><span>Bandeira tarifária</span><strong id="band"><span class="bdot" id="bdot"></span><span id="bnome">—</span></strong><small id="bref">carregando…</small><small class="fut"><a href="https://www.gov.br/aneel/pt-br/assuntos/tarifas/bandeiras-tarifarias">Ver na ANEEL</a></small></div>
 </section>
 
@@ -159,6 +174,22 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
   </article>
 
 </section>
+
+
+<div class="grafico-fundo" id="gfundo" hidden>
+  <div class="grafico" role="dialog" aria-modal="true" aria-labelledby="gtitulo">
+    <div class="topo">
+      <div><h3 id="gtitulo">—</h3><div class="resumo" id="gresumo"></div></div>
+      <div class="periodos" id="gper">
+        <button type="button" data-m="3">3 meses</button><button type="button" data-m="12" class="on">1 ano</button><button type="button" data-m="60">5 anos</button>
+        <button type="button" class="fechar" id="gfechar">Fechar ✕</button>
+      </div>
+    </div>
+    <div class="leitura" id="gleitura">&nbsp;</div>
+    <svg id="gsvg" viewBox="0 0 800 300" preserveAspectRatio="none" role="img" aria-label="Gráfico"></svg>
+    <div class="fonte" id="gfonte"></div>
+  </div>
+</div>
 
 <footer>
   <span id="atualizado">Atualizando…</span>
@@ -343,6 +374,74 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     var anoDI = String(new Date().getFullYear() + 1).slice(2);
     futuroB3('DI1', false, 'DI1F' + anoDI).then(function (q) { if (q) set('selicf', 'DI futuro ' + q.codigo + ': ' + br(q.valor, 2) + '%' + seta(q.variacao) + nota(q)); }).catch(function () {});
   }
+
+  // ---------- Gráficos ao clicar nos cards (Banco Central) ----------
+  var SERIES = {
+    dolar: { nome: 'Dólar (PTAX venda)', sgs: 1, fmt: function (v) { return 'R$ ' + br(v, 4); } },
+    euro: { nome: 'Euro (PTAX venda)', sgs: 21619, fmt: function (v) { return 'R$ ' + br(v, 4); } },
+    selic: { nome: 'Selic meta', sgs: 432, fmt: function (v) { return br(v, 2) + '%'; } },
+    ipca: { nome: 'IPCA acumulado em 12 meses', sgs: 13522, fmt: function (v) { return br(v, 2) + '%'; } }
+  };
+  var gAtual = null, gMeses = 12, gDados = [];
+  function dd(d) { return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear(); }
+  function abreGrafico(chave) {
+    gAtual = chave; document.getElementById('gfundo').hidden = false;
+    document.getElementById('gtitulo').textContent = SERIES[chave].nome;
+    carregaGrafico(); document.getElementById('gfechar').focus();
+  }
+  function fechaGrafico() { document.getElementById('gfundo').hidden = true; gAtual = null; }
+  function carregaGrafico() {
+    var S = SERIES[gAtual], ini = new Date(); ini.setMonth(ini.getMonth() - gMeses);
+    document.getElementById('gresumo').textContent = 'Carregando…'; document.getElementById('gsvg').innerHTML = ''; document.getElementById('gleitura').innerHTML = '&nbsp;';
+    document.getElementById('gfonte').textContent = 'Fonte: Banco Central (série ' + S.sgs + ').';
+    pega('https://api.bcb.gov.br/dados/serie/bcdata.sgs.' + S.sgs + '/dados?formato=json&dataInicial=' + dd(ini) + '&dataFinal=' + dd(new Date()))
+      .then(function (j) {
+        gDados = (j || []).map(function (x) { var p = x.data.split('/'); return { t: new Date(+p[2], p[1] - 1, +p[0]), v: Number(x.valor), d: x.data }; }).filter(function (x) { return !isNaN(x.v); });
+        desenha();
+      }).catch(function () { document.getElementById('gresumo').textContent = 'Não carregou agora. Tente de novo em alguns minutos.'; });
+  }
+  function desenha() {
+    var S = SERIES[gAtual], svg = document.getElementById('gsvg'), d = gDados;
+    if (d.length < 2) { document.getElementById('gresumo').textContent = 'Sem dados suficientes para este período.'; return; }
+    var W = 800, H = 300, P = 10, min = Infinity, max = -Infinity;
+    d.forEach(function (x) { if (x.v < min) min = x.v; if (x.v > max) max = x.v; });
+    var folga = (max - min) * 0.08 || Math.abs(max) * 0.02 || 1; min -= folga; max += folga;
+    var t0 = d[0].t.getTime(), t1 = d[d.length - 1].t.getTime();
+    function X(t) { return P + (W - 2 * P) * (t - t0) / Math.max(1, t1 - t0); }
+    function Y(v) { return P + (H - 2 * P) * (1 - (v - min) / (max - min)); }
+    var linha = d.map(function (x, i) { return (i ? 'L' : 'M') + X(x.t.getTime()).toFixed(1) + ' ' + Y(x.v).toFixed(1); }).join(' ');
+    var cor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#D4B062';
+    var grade = '';
+    for (var g = 0; g <= 4; g++) { var yy = P + (H - 2 * P) * g / 4; grade += '<line x1="0" x2="' + W + '" y1="' + yy + '" y2="' + yy + '" stroke="currentColor" stroke-opacity=".08" vector-effect="non-scaling-stroke"/>'; }
+    svg.innerHTML = grade + '<path d="' + linha + ' L' + X(t1) + ' ' + (H - P) + ' L' + X(t0) + ' ' + (H - P) + ' Z" fill="' + cor + '" fill-opacity=".10"/>' +
+      '<path d="' + linha + '" fill="none" stroke="' + cor + '" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>' +
+      '<line id="gcur" x1="0" x2="0" y1="0" y2="' + H + '" stroke="currentColor" stroke-opacity=".35" vector-effect="non-scaling-stroke" visibility="hidden"/>' +
+      '<circle id="gpt" r="5" fill="' + cor + '" visibility="hidden"/>';
+    svg.style.color = getComputedStyle(document.body).color;
+    var vmin = Math.min.apply(null, d.map(function (x) { return x.v; })), vmax = Math.max.apply(null, d.map(function (x) { return x.v; }));
+    var ini = d[0].v, fim = d[d.length - 1].v, varp = (fim / ini - 1) * 100;
+    document.getElementById('gresumo').textContent = 'Agora: ' + S.fmt(fim) + ' · no período: ' + (varp >= 0 ? '▲ ' : '▼ ') + br(Math.abs(varp), 2) + '% · mínima ' + S.fmt(vmin) + ' · máxima ' + S.fmt(vmax);
+    svg.onmousemove = function (e) {
+      var r = svg.getBoundingClientRect(), tx = t0 + (t1 - t0) * Math.min(1, Math.max(0, ((e.clientX - r.left) / r.width * W - P) / (W - 2 * P)));
+      var best = d[0]; d.forEach(function (x) { if (Math.abs(x.t - tx) < Math.abs(best.t - tx)) best = x; });
+      var cx = X(best.t.getTime()), cy = Y(best.v), cur = document.getElementById('gcur'), pt = document.getElementById('gpt');
+      cur.setAttribute('x1', cx); cur.setAttribute('x2', cx); cur.setAttribute('visibility', 'visible');
+      pt.setAttribute('cx', cx); pt.setAttribute('cy', cy); pt.setAttribute('visibility', 'visible');
+      document.getElementById('gleitura').textContent = best.d + ': ' + S.fmt(best.v);
+    };
+    svg.onmouseleave = function () { document.getElementById('gcur').setAttribute('visibility', 'hidden'); document.getElementById('gpt').setAttribute('visibility', 'hidden'); document.getElementById('gleitura').innerHTML = '&nbsp;'; };
+  }
+  document.querySelectorAll('.tile.clicavel').forEach(function (el) {
+    el.addEventListener('click', function (e) { if (e.target.closest('a')) return; abreGrafico(el.dataset.serie); });
+    el.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abreGrafico(el.dataset.serie); } });
+  });
+  document.getElementById('gper').addEventListener('click', function (e) {
+    var b = e.target.closest('button[data-m]'); if (!b) return;
+    gMeses = Number(b.dataset.m); document.querySelectorAll('#gper button[data-m]').forEach(function (x) { x.classList.toggle('on', x === b); }); carregaGrafico();
+  });
+  document.getElementById('gfechar').addEventListener('click', fechaGrafico);
+  document.getElementById('gfundo').addEventListener('click', function (e) { if (e.target.id === 'gfundo') fechaGrafico(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && gAtual) fechaGrafico(); });
 
   function atualiza() {
     clima(); cambio(); bc(); meusSites();
