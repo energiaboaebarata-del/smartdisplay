@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SmartDisplay</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root, [data-theme="grafite"] {
+  --bg:#17181A; --surface:#202124; --border:#2E2F33; --text:#E4E4E1; --muted:#A6A6A0;
+  --accent:#D4B062; --btn:#D4B062; --btnText:#17181A; --ph:#1A1B1D; --phBorder:#3A3B40;
+}
+[data-theme="areia"] {
+  --bg:#F2F0EB; --surface:#FBFAF7; --border:#E1DDD3; --text:#24251F; --muted:#5C5B55;
+  --accent:#86670F; --btn:#2B2C27; --btnText:#FBFAF7; --ph:#F2F0EB; --phBorder:#CFCABE;
+}
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--text); font-family:Inter, system-ui, sans-serif; transition: background .3s, color .3s; }
+a { color:var(--accent); text-decoration:none; }
+a:hover { text-decoration:underline; }
+.wrap { max-width:1320px; margin:0 auto; padding:40px 24px 56px; display:flex; flex-direction:column; gap:28px; }
+header { display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:24px; }
+.kicker { margin:0; font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); font-weight:600; }
+h1 { margin:6px 0; font-family:Manrope, sans-serif; font-size:40px; font-weight:800; letter-spacing:-.01em; }
+.sub { margin:0; font-size:16px; color:var(--muted); }
+form.busca { flex:1 1 380px; max-width:560px; display:flex; flex-direction:column; gap:6px; }
+form.busca label { font-size:13px; color:var(--muted); }
+.row { display:flex; gap:8px; }
+input[type=search] { flex:1; min-width:0; height:48px; padding:0 16px; border-radius:12px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-size:16px; font-family:inherit; }
+button { height:48px; padding:0 20px; border-radius:12px; border:0; background:var(--btn); color:var(--btnText); font-weight:700; font-size:15px; font-family:inherit; cursor:pointer; }
+button.ghost { background:transparent; color:var(--muted); border:1px solid var(--border); font-weight:500; font-size:13px; height:44px; padding:0 14px; }
+nav { display:flex; flex-wrap:wrap; gap:10px; }
+nav a { display:inline-flex; align-items:center; min-height:44px; padding:0 16px; border-radius:999px; background:var(--surface); border:1px solid var(--border); color:var(--text); font-size:14px; font-weight:500; }
+.ind { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:12px; }
+.tile { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; display:flex; flex-direction:column; gap:4px; }
+.tile span { font-size:13px; color:var(--muted); }
+.tile small { font-size:12px; color:var(--muted); }
+.tile strong { font-family:Manrope, sans-serif; font-size:24px; }
+.cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(340px, 1fr)); gap:20px; align-items:start; }
+article { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:24px; display:flex; flex-direction:column; gap:16px; }
+.head { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+h2 { margin:0; font-family:Manrope, sans-serif; font-size:20px; font-weight:700; }
+.tag { display:inline-flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); font-weight:600; }
+.dot { width:8px; height:8px; border-radius:50%; }
+.ph { border-radius:12px; background:var(--ph); border:1px dashed var(--phBorder); display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:14px; text-align:center; padding:16px; min-height:120px; line-height:1.5; }
+.more { font-size:14px; font-weight:600; }
+footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; padding-top:12px; border-top:1px solid var(--border); font-size:13px; color:var(--muted); }
+@media (max-width:600px){ h1{font-size:30px} .cards{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div>
+    <p class="kicker">SmartDisplay</p>
+    <h1 id="saudacao">Olá, Rafael</h1>
+    <p class="sub"><span id="data">…</span> · <span id="hora">…</span> · Rio de Janeiro · <span id="clima">carregando clima…</span></p>
+  </div>
+  <form class="busca" action="https://www.google.com/search" method="get">
+    <label for="q">Buscar na web</label>
+    <div class="row">
+      <input id="q" name="q" type="search" placeholder="Pesquise no Google…" autocomplete="off">
+      <button type="submit">Buscar</button>
+    </div>
+  </form>
+</header>
+
+<nav aria-label="Atalhos dos meus apps">
+  <a href="https://www.s2bt.com.br">S2BT Energia</a>
+  <a href="https://poderometro.com.br">Poderômetro</a>
+  <a href="https://pcd.s2bt.com.br">Inclui+</a>
+  <a href="https://claude.ai/artifact/RAiVFoSjMTE1yYLbbkpjLm">Rafa em Dia</a>
+  <a href="https://mail.google.com">Gmail</a>
+  <a href="https://calendar.google.com">Google Agenda</a>
+  <a href="https://web.whatsapp.com">WhatsApp</a>
+  <a href="https://claude.ai">Claude</a>
+</nav>
+
+<section class="ind" aria-label="Indicadores econômicos">
+  <div class="tile"><span>Dólar</span><strong id="usd">—</strong><small id="usdv">carregando…</small></div>
+  <div class="tile"><span>Euro</span><strong id="eur">—</strong><small id="eurv">carregando…</small></div>
+  <div class="tile"><span>Selic (meta)</span><strong id="selic">—</strong><small>ao ano · Banco Central</small></div>
+  <div class="tile"><span>IPCA 12 meses</span><strong id="ipca">—</strong><small id="ipcad">Banco Central</small></div>
+  <div class="tile"><span>Bandeira tarifária</span><strong style="font-size:18px"><a href="https://www.gov.br/aneel/pt-br/assuntos/tarifas/bandeiras-tarifarias">Ver na ANEEL</a></strong><small>em breve aqui</small></div>
+</section>
+
+<section class="cards">
+
+  <article>
+    <div class="head"><h2>Política</h2><span class="tag"><span class="dot" style="background:#6F9BE8"></span>Poderômetro</span></div>
+    <div class="ph">As manchetes do Poderômetro vão aparecer aqui na próxima etapa.</div>
+    <a class="more" href="https://poderometro.com.br">Abrir o Poderômetro →</a>
+  </article>
+
+  <article>
+    <div class="head"><h2>Direitos PcD</h2><span class="tag"><span class="dot" style="background:#4FBF9F"></span>Inclui+</span></div>
+    <div class="ph">As notícias do Inclui+ vão aparecer aqui na próxima etapa.</div>
+    <a class="more" href="https://pcd.s2bt.com.br">Abrir o Inclui+ →</a>
+  </article>
+
+  <article>
+    <div class="head"><h2>Melhor oferta perto de você</h2><span class="tag"><span class="dot" style="background:#D4B062"></span>S2BT</span></div>
+    <div class="ph">A melhor oferta de energia por assinatura da sua região vai aparecer aqui numa próxima etapa.</div>
+    <a class="more" href="https://www.s2bt.com.br">Abrir o simulador →</a>
+  </article>
+
+  <article>
+    <div class="head"><h2>Hoje</h2><span class="tag"><span class="dot" style="background:#E08F5A"></span>Google Agenda</span></div>
+    <div class="ph">Seus compromissos do dia vão aparecer aqui, com acesso protegido.</div>
+    <a class="more" href="https://calendar.google.com/calendar/r/day">Abrir a agenda de hoje →</a>
+  </article>
+
+  <article>
+    <div class="head"><h2>Finanças</h2><span class="tag"><span class="dot" style="background:#9C86E0"></span>Em breve</span></div>
+    <div class="ph">Espaço reservado para a futura ferramenta de finanças.</div>
+  </article>
+
+</section>
+
+<footer>
+  <span id="atualizado">Atualizando…</span>
+  <button class="ghost" id="tema" type="button">Tema: Automático</button>
+</footer>
+
+</div>
+
+<script>
+(function () {
+  // ---------- Tema (automático pela hora, ou escolhido) ----------
+  var MODOS = ['auto', 'grafite', 'areia'];
+  var NOMES = { auto: 'Automático', grafite: 'Escuro', areia: 'Claro' };
+  var modo = 'auto';
+  try { modo = localStorage.getItem('sd-tema') || 'auto'; } catch (e) {}
+  function aplicaTema() {
+    var h = new Date().getHours();
+    var t = modo === 'auto' ? ((h >= 7 && h < 18) ? 'areia' : 'grafite') : modo;
+    document.documentElement.setAttribute('data-theme', t);
+    document.getElementById('tema').textContent = 'Tema: ' + NOMES[modo];
+  }
+  document.getElementById('tema').addEventListener('click', function () {
+    modo = MODOS[(MODOS.indexOf(modo) + 1) % MODOS.length];
+    try { localStorage.setItem('sd-tema', modo); } catch (e) {}
+    aplicaTema();
+  });
+
+  // ---------- Relógio e saudação ----------
+  function relogio() {
+    var d = new Date();
+    var h = d.getHours();
+    var s = h < 5 ? 'Boa noite' : h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
+    document.getElementById('saudacao').textContent = s + ', Rafael';
+    var data = d.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+    document.getElementById('data').textContent = data.charAt(0).toUpperCase() + data.slice(1);
+    document.getElementById('hora').textContent = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    aplicaTema();
+  }
+  relogio();
+  setInterval(relogio, 30000);
+
+  // ---------- Ajudantes ----------
+  function br(n, casas) { return Number(n).toLocaleString('pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas }); }
+  function set(id, txt) { var el = document.getElementById(id); if (el) el.textContent = txt; }
+  function pega(url) { return fetch(url, { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }); }
+
+  // ---------- Clima (Open-Meteo, grátis) ----------
+  var CODIGOS = { 0:'céu limpo',1:'quase limpo',2:'parcialmente nublado',3:'nublado',45:'neblina',48:'neblina',51:'garoa fraca',53:'garoa',55:'garoa forte',61:'chuva fraca',63:'chuva',65:'chuva forte',80:'pancadas fracas',81:'pancadas de chuva',82:'pancadas fortes',95:'trovoadas',96:'trovoadas com granizo',99:'trovoadas com granizo' };
+  function clima() {
+    pega('https://api.open-meteo.com/v1/forecast?latitude=-22.91&longitude=-43.17&current=temperature_2m,weather_code&timezone=America%2FSao_Paulo')
+      .then(function (j) { set('clima', Math.round(j.current.temperature_2m) + '°C, ' + (CODIGOS[j.current.weather_code] || 'tempo variável')); })
+      .catch(function () { set('clima', 'clima indisponível agora'); });
+  }
+
+  // ---------- Câmbio (AwesomeAPI, grátis) ----------
+  function cambio() {
+    pega('https://economia.awesomeapi.com.br/json/last/USD-BRL,EUR-BRL')
+      .then(function (j) {
+        set('usd', 'R$ ' + br(j.USDBRL.bid, 2));
+        set('usdv', (Number(j.USDBRL.pctChange) >= 0 ? '▲ ' : '▼ ') + br(Math.abs(j.USDBRL.pctChange), 2) + '% hoje');
+        set('eur', 'R$ ' + br(j.EURBRL.bid, 2));
+        set('eurv', (Number(j.EURBRL.pctChange) >= 0 ? '▲ ' : '▼ ') + br(Math.abs(j.EURBRL.pctChange), 2) + '% hoje');
+      })
+      .catch(function () { set('usdv', 'indisponível agora'); set('eurv', 'indisponível agora'); });
+  }
+
+  // ---------- Selic e IPCA (Banco Central, grátis) ----------
+  function bc() {
+    pega('https://api.bcb.gov.br/dados/serie/bcdata.sgs.432/dados/ultimos/1?formato=json')
+      .then(function (j) { set('selic', br(j[0].valor, 2) + '%'); })
+      .catch(function () { set('selic', '—'); });
+    pega('https://api.bcb.gov.br/dados/serie/bcdata.sgs.13522/dados/ultimos/1?formato=json')
+      .then(function (j) { set('ipca', br(j[0].valor, 2) + '%'); set('ipcad', 'até ' + j[0].data.slice(3) + ' · Banco Central'); })
+      .catch(function () { set('ipca', '—'); });
+  }
+
+  function atualiza() {
+    clima(); cambio(); bc();
+    set('atualizado', 'Atualizado às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
+  }
+  atualiza();
+  setInterval(atualiza, 15 * 60 * 1000);
+})();
+</script>
+</body>
+</html>
