@@ -116,12 +116,15 @@ async function agenda(urlICS) {
 const B3 = "https://cotacao.b3.com.br/mds/api/v1/DerivativeQuotation/";
 const num = v => (v == null || v === "" || isNaN(Number(v))) ? null : Number(v);
 async function contratos(ativo) {
-  const r = await fetch(B3 + ativo, {
+  const opcoes = {
     cf: { cacheTtl: 300, cacheEverything: true },
     headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
       "Accept": "application/json, text/plain, */*", "Referer": "https://www.b3.com.br/" },
-  });
-  if (!r.ok) throw new Error(ativo + ": B3 respondeu " + r.status);
+  };
+  // 526 = o Cloudflare não aceitou o certificado da B3; tenta pelo endereço sem https
+  let r = await fetch(B3 + ativo, opcoes).catch(() => null);
+  if (!r || !r.ok) { const r2 = await fetch(B3.replace("https://", "http://") + ativo, opcoes).catch(() => null); if (r2 && r2.ok) r = r2; }
+  if (!r || !r.ok) throw new Error(ativo + ": B3 respondeu " + (r ? r.status : "sem resposta"));
   const txt = await r.text();
   let d; try { d = JSON.parse(txt); } catch (e) { throw new Error(ativo + ": resposta não é JSON (" + txt.slice(0, 60) + ")"); }
   const lista = (d.Scty || []).map(s => {
