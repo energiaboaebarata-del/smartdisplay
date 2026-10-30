@@ -174,12 +174,43 @@ async function futuros() {
   return saida;
 }
 
+// ---------- Bandeira tarifária (dados abertos da ANEEL) ----------
+const ANEEL = "https://dadosabertos.aneel.gov.br/api/3/action/";
+const BANDEIRA_RESERVA = { bandeira: "Verde", competencia: "", fonte: "informada pelo Rafael em 30/10/2026" };
+async function aneel(caminho) {
+  for (const base of [ANEEL, ANEEL.replace("https://", "http://")]) {
+    const r = await fetch(base + caminho, { cf: { cacheTtl: 21600, cacheEverything: true }, headers: { "Accept": "application/json", "User-Agent": "Mozilla/5.0 SmartDisplay" } }).catch(() => null);
+    if (r && r.ok) { const j = await r.json().catch(() => null); if (j && j.success) return j.result; }
+  }
+  throw new Error("ANEEL não respondeu");
+}
+async function bandeira() {
+  try {
+    const busca = await aneel("package_search?q=" + encodeURIComponent("bandeira tarifaria acionamento") + "&rows=10");
+    const recursos = (busca.results || []).flatMap(p => p.resources || [])
+      .filter(r => r.datastore_active && /bandeira|acionamento/i.test((r.name || "") + " " + (r.description || "")));
+    for (const rec of recursos) {
+      const meta = await aneel("datastore_search?resource_id=" + rec.id + "&limit=0").catch(() => null);
+      const campos = ((meta && meta.fields) || []).map(f => f.id);
+      const fBand = campos.find(c => /bandeira/i.test(c) && !/valor|vlr|custo/i.test(c));
+      const fData = campos.find(c => /compet/i.test(c)) || campos.find(c => /^dat|data|mes/i.test(c));
+      if (!fBand || !fData) continue;
+      const res = await aneel("datastore_search?resource_id=" + rec.id + "&limit=3&sort=" + encodeURIComponent(fData + " desc")).catch(() => null);
+      const linha = res && (res.records || [])[0];
+      if (linha && linha[fBand]) return { bandeira: String(linha[fBand]).trim(), competencia: String(linha[fData]).slice(0, 10), fonte: "ANEEL" };
+    }
+    throw new Error("sem tabela de acionamento");
+  } catch (e) {
+    return { ...BANDEIRA_RESERVA, aviso: String(e.message || e) };
+  }
+}
+
 // ---------- Junta tudo ----------
 export async function onRequest(context) {
   const { request, env } = context;
   const url = new URL(request.url);
   const uf = (url.searchParams.get("uf") || request.cf?.regionCode || "RJ").toUpperCase().slice(0, 2);
-  const tarefas = { politica: politica(), pcd: pcd(), futuros: futuros() };
+  const tarefas = { politica: politica(), pcd: pcd(), futuros: futuros(), bandeira: bandeira() };
   const chave = url.searchParams.get("k");
   const agendaLiberada = env.SD_CHAVE && env.AGENDA_ICS && chave && chave === env.SD_CHAVE;
   if (agendaLiberada) tarefas.agenda = agenda(env.AGENDA_ICS);
