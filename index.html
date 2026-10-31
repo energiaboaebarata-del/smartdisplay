@@ -46,6 +46,18 @@ nav a { display:inline-flex; align-items:center; min-height:44px; padding:0 16px
 .tile strong { font-family:Manrope, sans-serif; font-size:24px; }
 .tile strong span { font-size:inherit; color:inherit; }
 .cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(340px, 1fr)); gap:20px; align-items:start; }
+.cards.linha { grid-template-columns:repeat(3, minmax(0, 1fr)); margin-bottom:20px; }
+.cards.menor { grid-template-columns:repeat(2, minmax(0, 1fr)); gap:16px; opacity:.88; }
+.cards.menor article { padding:18px; gap:12px; border-radius:14px; }
+.cards.menor h2 { font-size:16px; }
+.cards.menor .lista a.tit, .cards.menor .lista li { font-size:13px; }
+.trends { counter-reset:t; display:grid !important; grid-template-columns:1fr 1fr; column-gap:18px; }
+.trends li { counter-increment:t; flex-direction:row !important; align-items:baseline; gap:8px !important; padding:6px 0 !important; border-bottom:1px solid var(--border) !important; }
+.trends li::before { content:counter(t); font-weight:700; color:var(--accent); min-width:16px; }
+.trends li.carregando::before, .trends li.aviso::before { content:none; }
+.trends a { color:var(--text); font-weight:600; }
+.trends .tr { margin-left:auto; color:var(--muted); font-size:12px; white-space:nowrap; }
+@media (max-width:1100px){ .cards.linha{grid-template-columns:1fr 1fr} }
 article { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:24px; display:flex; flex-direction:column; gap:16px; }
 .head { display:flex; justify-content:space-between; align-items:center; gap:12px; }
 h2 { margin:0; font-family:Manrope, sans-serif; font-size:20px; font-weight:700; }
@@ -179,7 +191,7 @@ h2 { margin:0; font-family:Manrope, sans-serif; font-size:20px; font-weight:700;
 .tile.orelha:hover::after, .tile.orelha:focus-visible::after { width:38px; height:38px; }
 @media (prefers-reduced-motion:reduce) { .tile.orelha::after { transition:none; } }
 footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; padding-top:12px; border-top:1px solid var(--border); font-size:13px; color:var(--muted); }
-@media (max-width:600px){ h1{font-size:30px} .cards{grid-template-columns:1fr} }
+@media (max-width:600px){ h1{font-size:30px} .cards, .cards.linha, .cards.menor, .trends{grid-template-columns:1fr !important} }
 </style>
 </head>
 <body>
@@ -233,36 +245,13 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
   <div class="tile"><span>Bandeira tarifária</span><strong id="band"><span class="bdot" id="bdot"></span><span id="bnome">—</span></strong><small id="bref">carregando…</small><small class="fut"><a href="https://www.gov.br/aneel/pt-br/assuntos/tarifas/bandeiras-tarifarias">Ver na ANEEL</a></small></div>
 </section>
 
-<section class="cards">
-
-  <article class="globo-card">
-    <div class="head"><h2>Melhor oferta perto de você</h2><span class="tag"><span class="dot" style="background:#D4B062"></span>S2BT</span></div>
-    <div class="globo-box"><iframe id="globo" title="Globo com a melhor oferta de energia por assinatura na sua cidade" loading="lazy"></iframe></div>
-    <p class="dica">Arraste para girar · Ctrl + rodinha aproxima · toque na cidade para trocar</p>
-    <div class="links"><a class="more" href="https://www.s2bt.com.br/simular">Abrir o simulador →</a><a class="more" href="https://www.s2bt.com.br/globo">Globo em tela cheia →</a></div>
-  </article>
+<section class="cards linha">
 
   <article>
-    <div class="head"><h2>Hoje</h2><span class="tag"><span class="dot" style="background:#E08F5A"></span>Prumo</span></div>
+    <div class="head"><h2>Agenda do dia</h2><span class="tag"><span class="dot" style="background:#E08F5A"></span>Google Agenda · Prumo</span></div>
     <ul class="lista agenda" id="l-agenda"><li class="carregando">Carregando…</li></ul>
-    <a class="more" href="https://prumo.s2bt.com.br">Abrir o Prumo →</a>
+    <div class="links"><a class="more" href="https://calendar.google.com/calendar/u/0/r/day">Abrir a agenda de hoje →</a><a class="more" href="https://prumo.s2bt.com.br">Abrir o Prumo →</a></div>
   </article>
-
-  <article>
-    <div class="head"><h2>Política</h2><span class="tag"><span class="dot" style="background:#6F9BE8"></span>Poderômetro</span></div>
-    <ul class="lista" id="l-politica"><li class="carregando">Carregando…</li></ul>
-    <a class="more" href="https://poderometro.com.br">Abrir o Poderômetro →</a>
-  </article>
-
-  <article>
-    <div class="head"><h2>Direitos PcD</h2><span class="tag"><span class="dot" style="background:#4FBF9F"></span>Inclui+</span></div>
-    <ul class="lista" id="l-pcd"><li class="carregando">Carregando…</li></ul>
-    <a class="more" href="https://pcd.s2bt.com.br">Abrir o Inclui+ →</a>
-  </article>
-
-
-
-
 
   <article>
     <div class="head"><h2>Minhas ações</h2><button type="button" class="editar" id="acEditar">Editar</button></div>
@@ -275,10 +264,49 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     <p class="dica" id="acNota">Cotações da B3 com cerca de 15 min de atraso · clique numa ação para ver empresa, valor de mercado e gráfico</p>
   </article>
 
+  <article class="globo-card">
+    <div class="head"><h2>Melhor oferta perto de você</h2><span class="tag"><span class="dot" style="background:#D4B062"></span>S2BT</span></div>
+    <div class="globo-box"><iframe id="globo" title="Globo com a melhor oferta de energia por assinatura na sua cidade" loading="lazy"></iframe></div>
+    <p class="dica">Arraste para girar · Ctrl + rodinha aproxima · toque na cidade para trocar</p>
+    <div class="links"><a class="more" href="https://www.s2bt.com.br/simular">Abrir o simulador →</a><a class="more" href="https://www.s2bt.com.br/globo">Globo em tela cheia →</a></div>
+  </article>
+
+</section>
+
+<section class="cards linha" aria-label="Notícias">
+
+  <article>
+    <div class="head"><h2>Direitos PcD</h2><span class="tag"><span class="dot" style="background:#4FBF9F"></span>Inclui+</span></div>
+    <ul class="lista" id="l-pcd"><li class="carregando">Carregando…</li></ul>
+    <a class="more" href="https://pcd.s2bt.com.br">Abrir o Inclui+ →</a>
+  </article>
+
+  <article>
+    <div class="head"><h2>Energia</h2><span class="tag"><span class="dot" style="background:#D4B062"></span>notícias do setor</span></div>
+    <ul class="lista" id="l-energia"><li class="carregando">Carregando…</li></ul>
+    <a class="more" href="https://news.google.com/search?q=energia%20solar%20OR%20%22gera%C3%A7%C3%A3o%20distribu%C3%ADda%22%20OR%20ANEEL&hl=pt-BR&gl=BR&ceid=BR%3Apt-419">Mais notícias de energia →</a>
+  </article>
+
+  <article>
+    <div class="head"><h2>Flamengo</h2><span class="tag"><span class="dot" style="background:#C8102E"></span>Mengão</span></div>
+    <ul class="lista" id="l-flamengo"><li class="carregando">Carregando…</li></ul>
+    <a class="more" href="https://ge.globo.com/futebol/times/flamengo/">Abrir no ge →</a>
+  </article>
+
+</section>
+
+<section class="cards linha menor" aria-label="Acompanhamentos">
+
   <article>
     <div class="head"><h2>Alarmes</h2><span class="tag"><span class="dot" style="background:#E08F5A"></span>e-mail + navegador</span></div>
     <ul class="lista alarmes" id="l-alarmes"><li class="carregando">Carregando…</li></ul>
     <p class="dica">Para criar: clique no card da moeda ou numa ação e use “Me avise quando…”. O vigia confere a cada 15 min e manda e-mail.</p>
+  </article>
+
+  <article>
+    <div class="head"><h2>Top Trends</h2><span class="tag"><span class="dot" style="background:#6F9BE8"></span>Google · Brasil</span></div>
+    <ol class="lista trends" id="l-trends"><li class="carregando">Carregando…</li></ol>
+    <a class="more" href="https://trends.google.com.br/trending?geo=BR">Ver no Google Trends →</a>
   </article>
 
 </section>
@@ -456,7 +484,12 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
           var ref = mm ? (mm[1].length === 4 ? mm[2] + '/' + mm[1] : mm[1] + '/' + mm[2]) : '';
           set('bref', (ref ? ref + ' · ' : '') + (bd.fonte === 'ANEEL' ? 'ANEEL' : 'confirmada por você'));
         } else { set('bref', 'indisponível agora'); }
-        lista('l-politica', d.politica, 'As notícias do Poderômetro não carregaram agora. Tente de novo em alguns minutos.');
+        lista('l-energia', d.energia, 'As notícias de energia não carregaram agora. Tente de novo em alguns minutos.');
+        lista('l-flamengo', d.flamengo, 'As notícias do Flamengo não carregaram agora. Tente de novo em alguns minutos.');
+        var tr = d.trends, elT = document.getElementById('l-trends');
+        elT.innerHTML = (tr && tr.itens && tr.itens.length) ? tr.itens.map(function (x) {
+          return '<li><a href="' + esc(x.url) + '">' + esc(x.termo) + '</a>' + (x.trafego ? '<span class="tr">' + esc(x.trafego) + '</span>' : '') + '</li>';
+        }).join('') : '<li class="aviso">Os assuntos do momento não carregaram agora.</li>';
         lista('l-pcd', d.pcd, 'As notícias do Inclui+ não carregaram agora. Tente de novo em alguns minutos.');
         var g = document.getElementById('globo'), loc = d.local || {};
         if (g && !g.src) g.src = '/globo.html?card=1' + (loc.cidade ? '&cidade=' + encodeURIComponent(loc.cidade) : '') + (loc.uf ? '&uf=' + encodeURIComponent(loc.uf) : '');
@@ -482,7 +515,7 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
         }
       })
       .catch(function () {
-        ['l-politica', 'l-pcd', 'l-agenda'].forEach(function (id) { document.getElementById(id).innerHTML = '<li class="aviso">Não carregou agora. Tente de novo em alguns minutos.</li>'; });
+        ['l-energia', 'l-flamengo', 'l-pcd', 'l-agenda', 'l-trends'].forEach(function (id) { document.getElementById(id).innerHTML = '<li class="aviso">Não carregou agora. Tente de novo em alguns minutos.</li>'; });
         var g2 = document.getElementById('globo'); if (g2 && !g2.src) g2.src = '/globo.html?card=1';
       });
   }
