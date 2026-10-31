@@ -20,12 +20,12 @@
 body { margin:0; background:var(--bg); color:var(--text); font-family:Inter, system-ui, sans-serif; transition: background .3s, color .3s; }
 a { color:var(--accent); text-decoration:none; }
 a:hover { text-decoration:underline; }
-.wrap { max-width:1320px; margin:0 auto; padding:40px 24px 56px; display:flex; flex-direction:column; gap:28px; }
+.wrap { max-width:1680px; margin:0 auto; padding:40px 24px 56px; display:flex; flex-direction:column; gap:28px; }
 header { display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:24px; }
 .kicker { margin:0; font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); font-weight:600; }
 h1 { margin:6px 0; font-family:Manrope, sans-serif; font-size:40px; font-weight:800; letter-spacing:-.01em; }
 .sub { margin:0; font-size:16px; color:var(--muted); }
-form.busca { flex:1 1 380px; max-width:560px; display:flex; flex-direction:column; gap:6px; }
+form.busca { flex:1 1 300px; min-width:0; max-width:560px; display:flex; flex-direction:column; gap:6px; }
 form.busca label { font-size:13px; color:var(--muted); }
 .row { display:flex; gap:8px; }
 input[type=search] { flex:1; min-width:0; height:48px; padding:0 16px; border-radius:12px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-size:16px; font-family:inherit; }
@@ -46,18 +46,31 @@ nav a { display:inline-flex; align-items:center; min-height:44px; padding:0 16px
 .tile strong { font-family:Manrope, sans-serif; font-size:24px; }
 .tile strong span { font-size:inherit; color:inherit; }
 .cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(340px, 1fr)); gap:20px; align-items:start; }
-.cards.linha { grid-template-columns:repeat(3, minmax(0, 1fr)); margin-bottom:20px; }
-.cards.menor { grid-template-columns:repeat(2, minmax(0, 1fr)); gap:16px; opacity:.88; }
-.cards.menor article { padding:18px; gap:12px; border-radius:14px; }
-.cards.menor h2 { font-size:16px; }
-.cards.menor .lista a.tit, .cards.menor .lista li { font-size:13px; }
+.cards.grade { display:grid; gap:20px; align-items:stretch; grid-template-columns:1fr;
+  grid-template-areas:"agenda" "acoes" "oferta" "pcd" "energia" "flamengo" "alarmes" "trends"; }
+.a-agenda{grid-area:agenda} .a-acoes{grid-area:acoes} .a-oferta{grid-area:oferta} .a-pcd{grid-area:pcd}
+.a-energia{grid-area:energia} .a-flamengo{grid-area:flamengo} .a-alarmes{grid-area:alarmes} .a-trends{grid-area:trends}
+@media (min-width:700px){ .cards.grade { grid-template-columns:repeat(2, minmax(0,1fr));
+  grid-template-areas:"agenda acoes" "oferta pcd" "energia flamengo" "alarmes trends"; } }
+@media (min-width:1080px){ .cards.grade { grid-template-columns:repeat(3, minmax(0,1fr));
+  grid-template-areas:"agenda acoes oferta" "pcd energia flamengo" "alarmes trends trends"; } }
+@media (min-width:1560px){ .cards.grade { grid-template-columns:repeat(4, minmax(0,1fr));
+  grid-template-areas:"agenda acoes oferta pcd" "energia flamengo trends alarmes"; } }
+.cards.grade > article { min-width:0; }
+.cards.grade > article > .more, .cards.grade > article > .links, .cards.grade > article > .dica:last-child { margin-top:auto; }
+.cards.grade .lista a.tit { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.cards.grade .a-oferta .globo-box { height:auto; flex:1 1 300px; min-height:260px; }
+article.menor { padding:18px; gap:12px; border-radius:14px; opacity:.9; }
+article.menor h2 { font-size:16px; }
+article.menor .lista li, article.menor .dica { font-size:13px; }
+.a-trends { container-type:inline-size; }
 .trends { counter-reset:t; display:grid !important; grid-template-columns:1fr 1fr; column-gap:18px; }
 .trends li { counter-increment:t; flex-direction:row !important; align-items:baseline; gap:8px !important; padding:6px 0 !important; border-bottom:1px solid var(--border) !important; }
 .trends li::before { content:counter(t); font-weight:700; color:var(--accent); min-width:16px; }
 .trends li.carregando::before, .trends li.aviso::before { content:none; }
-.trends a { color:var(--text); font-weight:600; }
+.trends a { color:var(--text); font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
 .trends .tr { margin-left:auto; color:var(--muted); font-size:12px; white-space:nowrap; }
-@media (max-width:1100px){ .cards.linha{grid-template-columns:1fr 1fr} }
+@container (max-width:360px) { .trends { grid-template-columns:1fr; } }
 article { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:24px; display:flex; flex-direction:column; gap:16px; }
 .head { display:flex; justify-content:space-between; align-items:center; gap:12px; }
 h2 { margin:0; font-family:Manrope, sans-serif; font-size:20px; font-weight:700; }
@@ -191,7 +204,18 @@ h2 { margin:0; font-family:Manrope, sans-serif; font-size:20px; font-weight:700;
 .tile.orelha:hover::after, .tile.orelha:focus-visible::after { width:38px; height:38px; }
 @media (prefers-reduced-motion:reduce) { .tile.orelha::after { transition:none; } }
 footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; padding-top:12px; border-top:1px solid var(--border); font-size:13px; color:var(--muted); }
-@media (max-width:600px){ h1{font-size:30px} .cards, .cards.linha, .cards.menor, .trends{grid-template-columns:1fr !important} }
+@media (max-width:600px){ h1{font-size:30px}
+  .wrap { padding:24px 16px 40px; gap:20px; }
+  .row input { min-width:0; }
+  .principais { flex:1 1 100%; }
+  .icones { flex:1 1 100%; justify-content:center; }
+  .leds { flex:1 1 100%; margin-left:0; flex-direction:row; }
+  .leds .led { flex:1 1 0; min-width:0; }
+  .cards.grade { gap:14px; }
+  .ind { grid-template-columns:1fr 1fr; }
+  .ind > :last-child:nth-child(odd) { grid-column:1 / -1; }
+  article { padding:18px; border-radius:16px; }
+}
 </style>
 </head>
 <body>
@@ -245,15 +269,15 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
   <div class="tile"><span>Bandeira tarifária</span><strong id="band"><span class="bdot" id="bdot"></span><span id="bnome">—</span></strong><small id="bref">carregando…</small><small class="fut"><a href="https://www.gov.br/aneel/pt-br/assuntos/tarifas/bandeiras-tarifarias">Ver na ANEEL</a></small></div>
 </section>
 
-<section class="cards linha">
+<section class="cards grade" aria-label="Painel">
 
-  <article>
+  <article class="a-agenda">
     <div class="head"><h2>Agenda do dia</h2><span class="tag"><span class="dot" style="background:#E08F5A"></span>Google Agenda · Prumo</span></div>
     <ul class="lista agenda" id="l-agenda"><li class="carregando">Carregando…</li></ul>
     <div class="links"><a class="more" href="https://calendar.google.com/calendar/u/0/r/day">Abrir a agenda de hoje →</a><a class="more" href="https://prumo.s2bt.com.br">Abrir o Prumo →</a></div>
   </article>
 
-  <article>
+  <article class="a-acoes">
     <div class="head"><h2>Minhas ações</h2><button type="button" class="editar" id="acEditar">Editar</button></div>
     <form id="acForm" class="acform" hidden>
       <label for="acCampo">Códigos separados por vírgula</label>
@@ -264,46 +288,40 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     <p class="dica" id="acNota">Cotações da B3 com cerca de 15 min de atraso · clique numa ação para ver empresa, valor de mercado e gráfico</p>
   </article>
 
-  <article class="globo-card">
+  <article class="globo-card a-oferta">
     <div class="head"><h2>Melhor oferta perto de você</h2><span class="tag"><span class="dot" style="background:#D4B062"></span>S2BT</span></div>
     <div class="globo-box"><iframe id="globo" title="Globo com a melhor oferta de energia por assinatura na sua cidade" loading="lazy"></iframe></div>
     <p class="dica">Arraste para girar · Ctrl + rodinha aproxima · toque na cidade para trocar</p>
     <div class="links"><a class="more" href="https://www.s2bt.com.br/simular">Abrir o simulador →</a><a class="more" href="https://www.s2bt.com.br/globo">Globo em tela cheia →</a></div>
   </article>
 
-</section>
 
-<section class="cards linha" aria-label="Notícias">
-
-  <article>
+  <article class="a-pcd">
     <div class="head"><h2>Direitos PcD</h2><span class="tag"><span class="dot" style="background:#4FBF9F"></span>Inclui+</span></div>
     <ul class="lista" id="l-pcd"><li class="carregando">Carregando…</li></ul>
     <a class="more" href="https://pcd.s2bt.com.br">Abrir o Inclui+ →</a>
   </article>
 
-  <article>
+  <article class="a-energia">
     <div class="head"><h2>Energia</h2><span class="tag"><span class="dot" style="background:#D4B062"></span>notícias do setor</span></div>
     <ul class="lista" id="l-energia"><li class="carregando">Carregando…</li></ul>
     <a class="more" href="https://news.google.com/search?q=energia%20solar%20OR%20%22gera%C3%A7%C3%A3o%20distribu%C3%ADda%22%20OR%20ANEEL&hl=pt-BR&gl=BR&ceid=BR%3Apt-419">Mais notícias de energia →</a>
   </article>
 
-  <article>
+  <article class="a-flamengo">
     <div class="head"><h2>Flamengo</h2><span class="tag"><span class="dot" style="background:#C8102E"></span>Mengão</span></div>
     <ul class="lista" id="l-flamengo"><li class="carregando">Carregando…</li></ul>
     <a class="more" href="https://ge.globo.com/futebol/times/flamengo/">Abrir no ge →</a>
   </article>
 
-</section>
 
-<section class="cards linha menor" aria-label="Acompanhamentos">
-
-  <article>
+  <article class="a-alarmes menor">
     <div class="head"><h2>Alarmes</h2><span class="tag"><span class="dot" style="background:#E08F5A"></span>e-mail + navegador</span></div>
     <ul class="lista alarmes" id="l-alarmes"><li class="carregando">Carregando…</li></ul>
     <p class="dica">Para criar: clique no card da moeda ou numa ação e use “Me avise quando…”. O vigia confere a cada 15 min e manda e-mail.</p>
   </article>
 
-  <article>
+  <article class="a-trends menor">
     <div class="head"><h2>Top Trends</h2><span class="tag"><span class="dot" style="background:#6F9BE8"></span>Google · Brasil</span></div>
     <ol class="lista trends" id="l-trends"><li class="carregando">Carregando…</li></ol>
     <a class="more" href="https://trends.google.com.br/trending?geo=BR">Ver no Google Trends →</a>
