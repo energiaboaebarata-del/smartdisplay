@@ -123,10 +123,6 @@ h2 { margin:0; font-family:Manrope, sans-serif; font-size:20px; font-weight:700;
 .alarmes .al-bt button { height:32px; padding:0 10px; font-size:12px; border-radius:8px; background:transparent; color:var(--muted); border:1px solid var(--border); font-weight:600; }
 .aviso-topo { position:fixed; top:16px; left:50%; transform:translateX(-50%); z-index:60; background:#d1453b; color:#fff; padding:12px 18px; border-radius:12px; font-weight:700; font-size:15px; box-shadow:0 8px 24px rgba(0,0,0,.3); display:flex; gap:12px; align-items:center; max-width:calc(100% - 32px); }
 .aviso-topo button { height:32px; padding:0 10px; font-size:13px; background:#fff; color:#d1453b; border-radius:8px; }
-.faixa { display:flex; flex-wrap:wrap; gap:16px; align-items:flex-start; }
-.faixa .navs { flex:1 1 640px; display:flex; flex-direction:column; gap:28px; min-width:0; }
-.faixa nav.redes { margin-top:0; }
-.leds { flex:0 1 340px; display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-left:auto; }
 .led { display:flex; align-items:center; gap:10px; height:auto; min-height:56px; padding:10px 12px; border-radius:14px; background:var(--surface); border:1px solid var(--border); color:var(--text); text-align:left; font-weight:400; font-size:14px; cursor:pointer; }
 .led b { display:block; font-size:14px; }
 .led small { display:block; font-size:12px; color:var(--muted); line-height:1.3; }
@@ -149,6 +145,39 @@ h2 { margin:0; font-family:Manrope, sans-serif; font-size:20px; font-weight:700;
 .jk-saco input { width:56px; height:40px; padding:0 8px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-size:14px; text-align:center; }
 .jk-acoes .sec { background:transparent; color:var(--text); border:1px solid var(--border); font-weight:600; }
 .jk-acoes a { border:1px solid var(--border); font-weight:600; }
+.faixa { display:flex; flex-wrap:wrap; gap:16px; align-items:center; }
+.principais { display:grid; grid-template-columns:repeat(2, minmax(150px, 1fr)); gap:10px; flex:0 1 380px; }
+.pri { display:inline-flex; align-items:center; justify-content:center; min-height:48px; padding:0 18px; border-radius:999px; background:var(--surface); border:1px solid var(--border); color:var(--text); font-size:15px; font-weight:600; text-decoration:none; height:auto; cursor:pointer; font-family:inherit; }
+.pri:hover { border-color:var(--accent); text-decoration:none; }
+.icones { display:flex; gap:10px; flex:0 0 auto; }
+.ico { width:48px; height:48px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; background:var(--surface); border:1px solid var(--border); color:var(--text); }
+.ico:hover { border-color:var(--accent); }
+.ico svg { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.leds { display:flex; flex-direction:column; gap:8px; flex:0 1 260px; margin-left:auto; }
+.led { width:100%; }
+.pop-fundo { position:fixed; inset:0; background:rgba(0,0,0,.5); display:flex; align-items:flex-start; justify-content:center; padding:96px 16px 16px; z-index:55; }
+.pop-fundo[hidden] { display:none; }
+.pop { background:var(--surface); border:1px solid var(--border); border-radius:18px; width:min(720px,100%); padding:20px 22px; display:flex; flex-direction:column; gap:14px; max-height:calc(100vh - 120px); overflow:auto; }
+.pop-topo { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.pop h3 { margin:0; font-family:Manrope, sans-serif; font-size:20px; }
+.pop h4 { margin:0 0 8px; font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); font-weight:600; }
+.pop .fechar { height:36px; padding:0 14px; font-size:13px; border-radius:10px; background:transparent; color:var(--muted); border:1px solid var(--border); }
+.blocos { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:16px; }
+.projs { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:10px; }
+.proj { position:relative; display:flex; flex-direction:column; gap:4px; padding:14px; border-radius:14px; border:1px solid var(--border); color:var(--text); text-decoration:none; min-height:72px; }
+.proj:hover { border-color:var(--accent); text-decoration:none; }
+.proj b { font-size:15px; line-height:1.25; }
+.proj small { font-size:12px; color:var(--muted); }
+.proj .cont { align-self:flex-start; margin-top:6px; min-width:34px; height:24px; padding:0 8px; border-radius:999px; background:var(--btn); color:var(--btnText); font-size:12px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; }
+.proj.off { opacity:.55; pointer-events:none; }
+.lista-links { display:flex; flex-direction:column; gap:8px; }
+.lista-links a { display:flex; align-items:center; min-height:44px; padding:0 14px; border-radius:12px; border:1px solid var(--border); color:var(--text); font-weight:600; font-size:14px; }
+.lista-links a:hover { border-color:var(--accent); text-decoration:none; }
+.tile { position:relative; }
+.tile.orelha { overflow:hidden; }
+.tile.orelha::after { content:""; position:absolute; top:0; right:0; width:26px; height:26px; background:linear-gradient(225deg, var(--bg) 50%, var(--accent) 50%); border-bottom-left-radius:6px; box-shadow:-2px 2px 4px rgba(0,0,0,.18); transition:width .2s, height .2s; }
+.tile.orelha:hover::after, .tile.orelha:focus-visible::after { width:38px; height:38px; }
+@media (prefers-reduced-motion:reduce) { .tile.orelha::after { transition:none; } }
 footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; padding-top:12px; border-top:1px solid var(--border); font-size:13px; color:var(--muted); }
 @media (max-width:600px){ h1{font-size:30px} .cards{grid-template-columns:1fr} }
 </style>
@@ -172,36 +201,33 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
 </header>
 
 <div class="faixa">
-<div class="navs">
-<nav aria-label="Atalhos dos meus apps">
-  <a href="https://www.s2bt.com.br">S2BT Energia</a>
-  <a href="https://poderometro.com.br">Poderômetro</a>
-  <a href="https://pcd.s2bt.com.br">Inclui+</a>
-  <a href="https://claude.ai/artifact/RAiVFoSjMTE1yYLbbkpjLm">Rafa em Dia</a>
-  <a href="https://mail.google.com">Gmail</a>
-  <a href="https://calendar.google.com">Google Agenda</a>
-  <a href="https://web.whatsapp.com">WhatsApp</a>
-  <a href="https://claude.ai">Claude</a>
-</nav>
-
-<nav aria-label="Redes e presença online" class="redes">
-  <span class="rotulo">Redes</span>
-  <a href="https://www.linkedin.com/in/rafaspinola/">LinkedIn · Rafael</a>
-  <a href="https://www.linkedin.com/company/s2bt-energia/">LinkedIn · S2BT</a>
-  <a href="https://www.instagram.com/orafaelspinola/">Instagram · @orafaelspinola</a>
-  <a href="https://www.instagram.com/s2bt.energia/">Instagram · @s2bt.energia</a>
-  <a href="https://business.google.com/">Google Meu Negócio</a>
-</nav>
+  <div class="principais" aria-label="Atalhos principais">
+    <a class="pri" href="https://www.s2bt.com.br">S2BT Energia</a>
+    <button type="button" class="pri" data-pop="network">Net Work ▾</button>
+    <button type="button" class="pri" data-pop="smartspin">Smart Spin ▾</button>
+    <a class="pri" href="https://claude.ai">Claude</a>
+  </div>
+  <div class="icones" aria-label="Comunicação">
+    <a class="ico" href="https://mail.google.com" aria-label="Gmail" title="Gmail"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></a>
+    <a class="ico" href="https://calendar.google.com" aria-label="Google Agenda" title="Google Agenda"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></a>
+    <a class="ico" href="https://web.whatsapp.com" aria-label="WhatsApp" title="WhatsApp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a8 8 0 0 1-11.8 7L4 20l1.5-4.1A8 8 0 1 1 20 11.5Z"/><path d="M9 9.5c.3 1.8 1.7 3.6 3.6 4.4l1.2-1.1 1.7.8-.4 1.4c-3 .2-6.4-3-6.6-6l1.4-.4.8 1.7-1.1 1.2"/></svg></a>
+  </div>
+  <aside class="leds" aria-label="Afazeres urgentes">
+    <button type="button" class="led" id="ledJoka"><span class="luz" id="luzJoka"></span><span><b>Joka</b><small id="txtJoka">carregando…</small></span></button>
+    <button type="button" class="led" id="ledPost"><span class="luz" id="luzPost"></span><span><b>Post do dia</b><small id="txtPost">em breve</small></span></button>
+  </aside>
 </div>
-<aside class="leds" aria-label="Afazeres urgentes">
-  <button type="button" class="led" id="ledJoka"><span class="luz" id="luzJoka"></span><span><b>Joka</b><small id="txtJoka">carregando…</small></span></button>
-  <button type="button" class="led" id="ledPost"><span class="luz" id="luzPost"></span><span><b>Post do dia</b><small id="txtPost">em breve</small></span></button>
-</aside>
+
+<div class="pop-fundo" id="popFundo" hidden>
+  <div class="pop" role="dialog" aria-modal="true" aria-labelledby="popTitulo">
+    <div class="pop-topo"><h3 id="popTitulo">—</h3><button type="button" class="fechar" id="popFechar">Fechar ✕</button></div>
+    <div id="popCorpo"></div>
+  </div>
 </div>
 
 <section class="ind" aria-label="Indicadores econômicos">
-  <div class="tile clicavel" data-serie="moeda" role="button" tabindex="0" aria-label="Ver gráfico da moeda"><span id="moNome">Dólar</span><strong id="usd">—</strong><small id="usdv">carregando…</small><small class="fut" id="usdf"></small><small class="fut" id="moDica">Toque para trocar: Dólar · Euro · Libra · Iene</small></div>
-  <div class="tile clicavel" data-serie="indice" role="button" tabindex="0" aria-label="Ver gráfico do índice"><span id="indNome">Ibovespa</span><strong id="indValor">—</strong><small id="indVar">carregando…</small><small class="fut">Toque para trocar: Ibovespa · S&amp;P 500 · Nasdaq · Cripto</small></div>
+  <div class="tile clicavel orelha" data-serie="moeda" title="Clique para ver o gráfico e trocar a moeda" role="button" tabindex="0" aria-label="Ver gráfico da moeda"><span id="moNome">Dólar</span><strong id="usd">—</strong><small id="usdv">carregando…</small><small class="fut" id="usdf"></small></div>
+  <div class="tile clicavel orelha" data-serie="indice" title="Clique para ver o gráfico e trocar o índice" role="button" tabindex="0" aria-label="Ver gráfico do índice"><span id="indNome">Ibovespa</span><strong id="indValor">—</strong><small id="indVar">carregando…</small></div>
   <div class="tile clicavel" data-serie="selic" role="button" tabindex="0" aria-label="Ver gráfico de Selic (meta)"><span>Selic (meta)</span><strong id="selic">—</strong><small>ao ano · Banco Central</small><small class="fut" id="selicf"></small></div>
   <div class="tile clicavel" data-serie="ipca" role="button" tabindex="0" aria-label="Ver gráfico de IPCA 12 meses"><span>IPCA 12 meses</span><strong id="ipca">—</strong><small id="ipcad">Banco Central</small><small class="fut" id="ipca15"></small></div>
   <div class="tile"><span>Bandeira tarifária</span><strong id="band"><span class="bdot" id="bdot"></span><span id="bnome">—</span></strong><small id="bref">carregando…</small><small class="fut"><a href="https://www.gov.br/aneel/pt-br/assuntos/tarifas/bandeiras-tarifarias">Ver na ANEEL</a></small></div>
@@ -876,6 +902,54 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     if (b) { b.disabled = true; jkAcao(b.dataset.jk).catch(function () {}).then(function () { b.disabled = false; }); }
     if (ev.target.closest('#jkAlimentar')) { ev.target.closest('#jkAlimentar').textContent = 'Em breve: precisa ligar a Tuya'; }
   });
+
+  // ---------- Painéis Smart Spin e Net Work ----------
+  var PROJETOS = [
+    { id: 'poderometro', nome: 'Poderômetro', desc: 'política em dados', url: 'https://poderometro.com.br' },
+    { id: 'inclui', nome: 'Inclui+', desc: 'direitos PcD', url: 'https://pcd.s2bt.com.br' },
+    { id: 'agape', nome: 'Ágape Resolve', desc: 'rede do BNI Ágape', url: 'https://agaperesolve.s2bt.com.br' },
+    { id: 'prumo', nome: 'Prumo', desc: 'assessor pessoal', url: 'https://prumo.s2bt.com.br' },
+    { id: 'bola', nome: 'Bola', desc: 'jornal esportivo', url: '' },
+    { id: 'tatame', nome: 'Tatame', desc: 'lutas', url: '' },
+    { id: 'role', nome: 'Rolê', desc: 'turismo e passeios', url: '' }
+  ];
+  var NETWORK = [
+    ['Redes', [['LinkedIn · Rafael', 'https://www.linkedin.com/in/rafaspinola/'], ['LinkedIn · S2BT', 'https://www.linkedin.com/company/s2bt-energia/'], ['@orafaelspinola', 'https://www.instagram.com/orafaelspinola/'], ['@s2bt.energia', 'https://www.instagram.com/s2bt.energia/']]],
+    ['BNI e Google', [['BNI Connect', 'https://www.bniconnectglobal.com/'], ['BNI Academy', 'https://www.bnibusinessbuilder.com/'], ['myBNI', 'https://www.mybni.com/'], ['Google Meu Negócio', 'https://business.google.com/']]]
+  ];
+  function curto(n) {
+    if (n == null) return '—';
+    if (n < 1000) return String(n);
+    var u = [['K', 1e3], ['M', 1e6], ['B', 1e9]], i = n >= 1e9 ? 2 : n >= 1e6 ? 1 : 0, v = n / u[i][1];
+    return (v < 10 ? br(Math.floor(v * 10) / 10, v % 1 ? 1 : 0) : Math.floor(v)) + u[i][0];
+  }
+  var fluxo = null;
+  function abrePop(qual) {
+    var corpo = document.getElementById('popCorpo');
+    if (qual === 'smartspin') {
+      set('popTitulo', 'Smart Spin · projetos');
+      var desenhar = function () {
+        corpo.innerHTML = '<div class="projs">' + PROJETOS.map(function (p) {
+          var f = fluxo && fluxo[p.id], n = f ? f.dias30 : null;
+          return '<a class="proj' + (p.url ? '' : ' off') + '" ' + (p.url ? 'href="' + p.url + '"' : 'aria-disabled="true"') + ' title="' + (f ? 'Hoje: ' + f.hoje + ' · 30 dias: ' + f.dias30 + ' · total: ' + f.total : 'Contador ainda sem dados') + '">' +
+            '<span class="cont" aria-label="visitas em 30 dias">' + curto(n) + '</span><b>' + esc(p.nome) + '</b><small>' + esc(p.url ? p.desc : 'endereço a definir') + '</small></a>';
+        }).join('') + '</div><p class="fonte">O número é de visitantes nos últimos 30 dias (cada aparelho conta 1 vez por dia). Passe o mouse para ver hoje e o total.</p>';
+      };
+      desenhar();
+      pega('/api/fluxo').then(function (j) { if (j && !j.erro) { fluxo = j; desenhar(); } }).catch(function () {});
+    } else {
+      set('popTitulo', 'Net Work');
+      corpo.innerHTML = '<div class="blocos">' + NETWORK.map(function (b) {
+        return '<div><h4>' + esc(b[0]) + '</h4><div class="lista-links">' + b[1].map(function (l) { return '<a href="' + l[1] + '">' + esc(l[0]) + '</a>'; }).join('') + '</div></div>';
+      }).join('') + '</div>';
+    }
+    document.getElementById('popFundo').hidden = false; document.getElementById('popFechar').focus();
+  }
+  function fechaPop() { document.getElementById('popFundo').hidden = true; }
+  document.querySelectorAll('[data-pop]').forEach(function (b) { b.addEventListener('click', function () { abrePop(b.dataset.pop); }); });
+  document.getElementById('popFechar').addEventListener('click', fechaPop);
+  document.getElementById('popFundo').addEventListener('click', function (e) { if (e.target.id === 'popFundo') fechaPop(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') fechaPop(); });
 
   function atualiza() {
     clima(); cambio(); bc(); meusSites(); acDesenha(); indCard(); alCarregar(); jkCarregar();
