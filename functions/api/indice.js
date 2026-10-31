@@ -18,7 +18,8 @@ export async function onRequest({ request, env }) {
       const t = res.timestamp || [], c = (res.indicators.quote[0] || {}).close || [];
       const hist = t.map((x, i) => ({ t: x, v: c[i] })).filter(p => p.v != null);
       const m = res.meta || {}, preco = m.regularMarketPrice ?? (hist.length ? hist[hist.length - 1].v : null);
-      const anterior = m.chartPreviousClose ?? m.previousClose;
+      // variação do dia: contra o fechamento do pregão anterior (penúltimo ponto diário), nunca contra o início do período
+      const anterior = m.previousClose ?? (hist.length >= 2 && RANGES[range] === "1d" ? hist[hist.length - 2].v : null);
       return json({ nome: INDICES[s], preco, variacao: preco != null && anterior ? (preco / anterior - 1) * 100 : null, historico: hist, fonte: "Yahoo Finance" });
     } catch (e) { erros.push("Yahoo falhou"); }
   }
