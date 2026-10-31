@@ -145,6 +145,8 @@ h2 { margin:0; font-family:Manrope, sans-serif; font-size:20px; font-weight:700;
 .jk-semana b { display:block; font-size:14px; color:var(--text); }
 .jk-acoes { display:flex; flex-wrap:wrap; gap:8px; }
 .jk-acoes button, .jk-acoes a { height:40px; padding:0 14px; font-size:14px; border-radius:10px; display:inline-flex; align-items:center; }
+.jk-saco { display:flex; align-items:center; gap:6px; font-size:14px; }
+.jk-saco input { width:56px; height:40px; padding:0 8px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-size:14px; text-align:center; }
 .jk-acoes .sec { background:transparent; color:var(--text); border:1px solid var(--border); font-weight:600; }
 .jk-acoes a { border:1px solid var(--border); font-weight:600; }
 footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; padding-top:12px; border-top:1px solid var(--border); font-size:13px; color:var(--muted); }
@@ -837,7 +839,7 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     el.innerHTML =
       '<div class="jk-grade">' +
         '<div><span>No alimentador</span><strong>' + g(d.tanqueG) + '</strong><span>≈ ' + br(d.tanqueDias, 1) + ' dias · enchido ' + dt(d.tanqueCheio) + (d.tanqueEstimado ? ' (estimado)' : '') + '</span></div>' +
-        '<div><span>Ração total (pacote + tanque)</span><strong>≈ ' + br(d.pacoteDias, 1) + ' dias</strong><span>pacote aberto ' + dt(d.pacoteAberto) + ' · ' + g(d.pacoteG) + ' no saco</span></div>' +
+        '<div><span>Ração total (saco + tanque)</span><strong>≈ ' + br(d.pacoteDias, 1) + ' dias</strong><span>' + g(d.pacoteG) + ' no saco · aberto ' + dt(d.pacoteAberto) + (d.pacoteEstimado ? ' (estimado)' : '') + '</span></div>' +
         '<div><span>Consumo médio do pacote</span><strong>' + g(d.mediaPacote) + '/dia</strong><span>' + cmp(d.mediaPacote, d.mediaAcum) + ' acumulada (' + g(d.mediaAcum) + ')</span></div>' +
         '<div><span>Últimas 24h</span><strong>' + g(d.ultimas24h) + '</strong><span>' + cmp(d.ultimas24h, d.mediaPacote) + ' do pacote</span></div>' +
       '</div>' +
@@ -848,9 +850,10 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
         '<button type="button" class="sec" data-jk="extra">+1 dose extra (já soltei)</button>' +
         '<button type="button" class="sec" data-jk="tanque">Enchi o alimentador</button>' +
         '<button type="button" class="sec" data-jk="pacote">Abri pacote novo</button>' +
+        '<form class="jk-saco" id="jkSaco"><label>Conferi o saco: tem <input id="jkPct" inputmode="numeric" maxlength="3" aria-label="Porcentagem no saco"> %</label><button type="submit" class="sec">Ajustar</button></form>' +
         '<a href="' + ML_RACAO + '">🛒 Ração N&amp;D mini no Mercado Livre</a>' +
       '</div>' +
-      '<p class="fonte">Estimativa pela programação (7h: 3 · 13h: 1 · 18h: 2 porções de ' + br(d.config.porcaoG, 1) + ' g) mais as doses extras registradas. Com a Tuya ligada, passa a usar o que o alimentador realmente soltou.</p>';
+      '<p class="fonte">Ritmo calculado pela ' + d.base + (d.conferido ? ' (' + dt(d.conferido) + ')' : '') + ' · programação: 7h 3 · 13h 1 · 18h 2 porções de ' + br(d.config.porcaoG, 1) + ' g (' + g(d.gDiaProgramado) + '/dia) · recompra sinalizada a ' + d.avisoRecompraDias + ' dias do fim. A estimativa melhora a cada pacote e a cada conferência; com a Tuya, passa a usar o que o alimentador realmente soltou.</p>';
   }
   function abreJoka() {
     gAtual = 'joka'; gConf = { joka: true };
@@ -863,6 +866,11 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     jkDesenha(); jkCarregar(); document.getElementById('gfechar').focus();
   }
   document.getElementById('ledJoka').addEventListener('click', abreJoka);
+  document.getElementById('gjoka').addEventListener('submit', function (ev) {
+    if (ev.target.id !== 'jkSaco') return; ev.preventDefault();
+    var v = Number(document.getElementById('jkPct').value); if (!(v >= 0 && v <= 100)) return;
+    jkAcao('estoque', { pct: v }).catch(function () {});
+  });
   document.getElementById('gjoka').addEventListener('click', function (ev) {
     var b = ev.target.closest('[data-jk]');
     if (b) { b.disabled = true; jkAcao(b.dataset.jk).catch(function () {}).then(function () { b.disabled = false; }); }
