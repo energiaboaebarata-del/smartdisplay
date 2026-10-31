@@ -1,6 +1,8 @@
 // SmartDisplay — motor que busca os dados dos sites do Rafael (roda no Cloudflare, não no navegador).
 // Endereço: /api/painel   (agenda só com a chave certa: /api/painel?k=SUA_CHAVE)
 
+import { rssItens } from "../../lib/rss.js";
+
 const PODEROMETRO = "https://poderometro.com.br/data/votacoes.json";
 const INCLUI = "https://pcd.s2bt.com.br/";
 const S2BT_UF = "https://www.s2bt.com.br/publico/vitrine/uf/";
@@ -11,21 +13,18 @@ async function pegar(url, tipo) {
   return tipo === "texto" ? r.text() : r.json();
 }
 
-// ---------- Política (Poderômetro) ----------
-async function politica() {
+// ---------- Poderômetro: tudo que saiu (Câmara, Senado, STF); o filtro por tema é feito no navegador ----------
+async function poder() {
   const d = await pegar(PODEROMETRO);
+  const corta = (s, n) => { s = String(s || ""); return s.length > n ? s.slice(0, n - 1) + "…" : s; };
   const itens = [];
-  (d.stf || []).slice(0, 3).forEach(n => itens.push({ titulo: n.titulo, fonte: "STF", data: n.dataHora, url: n.link }));
-  const vistas = new Set();
-  const unica = v => v.materia && !vistas.has(v.materia) && vistas.add(v.materia);
-  (d.camara || []).filter(unica).slice(0, 1).forEach(v => itens.push({
-    titulo: v.materia + ": " + (v.ementa || v.descricao || "").slice(0, 90) + ((v.ementa || "").length > 90 ? "…" : ""),
-    fonte: "Câmara · " + (v.aprovada ? "aprovado" : "votação"), data: v.dataHora, url: v.url }));
-  (d.senado || []).filter(unica).slice(0, 1).forEach(v => itens.push({
-    titulo: v.materia + ": " + (v.ementa || "").slice(0, 90) + ((v.ementa || "").length > 90 ? "…" : ""),
-    fonte: "Senado · " + (v.resultado || "votação"), data: v.dataHora, url: v.url }));
+  (d.stf || []).forEach(n => itens.push({ src: "stf", titulo: n.titulo, texto: corta((n.resumo || ""), 300), data: n.dataHora, url: n.link, fonte: "STF" }));
+  (d.camara || []).forEach(v => itens.push({ src: "camara", titulo: (v.materia ? v.materia + ": " : "") + corta(v.ementa || v.descricao, 140),
+    texto: corta([v.descricao, v.objeto].filter(Boolean).join(" "), 300), data: v.dataHora, url: v.url, fonte: "Câmara · " + (v.aprovada ? "aprovado" : "votação") }));
+  (d.senado || []).forEach(v => itens.push({ src: "senado", titulo: (v.materia ? v.materia + ": " : "") + corta(v.ementa, 140),
+    texto: corta(v.descricao, 300), data: v.dataHora, url: v.url, fonte: "Senado · " + (v.resultado || "votação") }));
   itens.sort((a, b) => String(b.data).localeCompare(String(a.data)));
-  return { atualizado: d.atualizadoEm, itens: itens.slice(0, 5) };
+  return { atualizado: d.atualizadoEm, itens };
 }
 
 // ---------- Direitos PcD (Inclui+) ----------
@@ -237,46 +236,12 @@ async function bandeira() {
 // ---------- Hoje no Prumo (somente leitura, senha PRUMO_TOKEN) ----------
 async function prumoHoje(env) {
   const r = await fetch((env.PRUMO_URL || "https://prumo.s2bt.com.br") + "/api/hoje", { headers: { Authorization: "Bearer " + env.PRUMO_TOKEN } });
-  if (!r.ok) throw new Error("Prumo respondeu " + r.status);
+  if (!r.ok) { let m = ""; try { m = (await r.json()).error || ""; } catch (e) {} throw new Error("Prumo respondeu " + r.status + (m ? " (" + m + ")" : "")); }
   const d = await r.json();
   return { fonte: "prumo", ...d };
 }
 
 
-// ---------- Notícias por RSS (Energia, Flamengo) e Top Trends ----------
-function rssItens(xml) {
-  const tira = s => String(s || "").replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1").replace(/<[^>]+>/g, "")
-    .replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").trim();
-  const tag = (bloco, nome) => { const m = bloco.match(new RegExp("<" + nome + "(?:\\s[^>]*)?>([\\s\\S]*?)</" + nome + ">")); return m ? tira(m[1]) : ""; };
-  return (xml.match(/<item[\s>][\s\S]*?<\/item>/g) || []).map(b => ({ b, titulo: tag(b, "title"), url: tag(b, "link"), data: tag(b, "pubDate"), fonte: tag(b, "source") }));
-}
-function isoData(d) { const t = Date.parse(d); return isNaN(t) ? "" : new Date(t - 3 * 3600e3).toISOString().slice(0, 16); }
-async function noticiasBusca(q, n) {
-  const fontes = [
-    "https://news.google.com/rss/search?hl=pt-BR&gl=BR&ceid=BR:pt-419&q=" + encodeURIComponent(q),
-    "https://www.bing.com/news/search?format=rss&setlang=pt-BR&cc=BR&q=" + encodeURIComponent(q.replace(/ when:\d+d/, "")),
-  ];
-  let ultimoErro;
-  for (const u of fontes) {
-    try {
-      const itens = rssItens(await pegar(u, "texto"));
-      if (!itens.length) throw new Error("sem itens");
-      const vistos = new Set();
-      const lista = itens.map(i => {
-        let titulo = i.titulo, fonte = i.fonte;
-        const m = titulo.match(/^(.*) - ([^-]{2,40})$/);
-        if (m) { titulo = m[1]; fonte = fonte || m[2]; }
-        if (!fonte) { try { fonte = new URL(i.url).hostname.replace(/^www\./, ""); } catch (e) {} }
-        return { titulo, fonte, data: isoData(i.data), url: i.url };
-      }).filter(i => { const k = i.titulo.toLowerCase().slice(0, 50); if (vistos.has(k)) return false; vistos.add(k); return true; })
-        .sort((a, b) => b.data.localeCompare(a.data));
-      return { itens: lista.slice(0, n) };
-    } catch (e) { ultimoErro = e; }
-  }
-  throw ultimoErro;
-}
-const energia = () => noticiasBusca('("energia solar" OR "geração distribuída" OR "energia por assinatura" OR "mercado livre de energia" OR "bandeira tarifária" OR ANEEL) when:3d', 4);
-const flamengo = () => noticiasBusca("Flamengo when:2d", 4);
 async function trends() {
   const xml = await pegar("https://trends.google.com/trending/rss?geo=BR", "texto");
   const itens = rssItens(xml).slice(0, 10).map(i => {
@@ -294,7 +259,7 @@ export async function onRequest(context) {
   const { request, env } = context;
   const url = new URL(request.url);
   const uf = (url.searchParams.get("uf") || request.cf?.regionCode || "RJ").toUpperCase().slice(0, 2);
-  const tarefas = { pcd: pcd(), energia: energia(), flamengo: flamengo(), trends: trends(), futuros: futuros(), bandeira: bandeira() };
+  const tarefas = { pcd: pcd(), poder: poder(), trends: trends(), futuros: futuros(), bandeira: bandeira() };
   const chave = url.searchParams.get("k");
   const temAgenda = env.PRUMO_TOKEN || env.AGENDA_ICS;
   const agendaLiberada = env.SD_CHAVE && temAgenda && chave && chave === env.SD_CHAVE;

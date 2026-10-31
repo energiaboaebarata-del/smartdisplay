@@ -63,6 +63,18 @@ nav a { display:inline-flex; align-items:center; min-height:44px; padding:0 16px
 article.menor { padding:18px; gap:12px; border-radius:14px; opacity:.9; }
 article.menor h2 { font-size:16px; }
 article.menor .lista li, article.menor .dica { font-size:13px; }
+.sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+.tit-sel { field-sizing:content; min-width:0; font:inherit; font-weight:700; color:var(--text); background:transparent; border:0; border-bottom:1px dashed var(--border); padding:0 22px 2px 0; cursor:pointer; max-width:100%;
+  appearance:none; -webkit-appearance:none; background-image:linear-gradient(45deg, transparent 50%, var(--accent) 50%), linear-gradient(135deg, var(--accent) 50%, transparent 50%);
+  background-position:calc(100% - 9px) 55%, calc(100% - 4px) 55%; background-size:5px 5px; background-repeat:no-repeat; }
+.tit-sel:hover, .tit-sel:focus-visible { border-bottom-color:var(--accent); outline:none; }
+.tit-sel option { color:#111; background:#fff; font-size:15px; font-weight:500; }
+.espform { display:flex; gap:8px; }
+.espform[hidden] { display:none; }
+.espform input { flex:1; min-width:0; height:38px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text); padding:0 12px; font:inherit; font-size:14px; }
+.espform button { height:38px; padding:0 14px; }
+.lista li.sep { padding:8px 0 0; border-bottom:0; font-size:12px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--muted); }
+.lista li.sep + li { padding-top:6px; }
 .a-trends { container-type:inline-size; }
 .trends { counter-reset:t; display:grid !important; grid-template-columns:1fr 1fr; column-gap:18px; }
 .trends li { counter-increment:t; flex-direction:row !important; align-items:baseline; gap:8px !important; padding:6px 0 !important; border-bottom:1px solid var(--border) !important; }
@@ -72,6 +84,7 @@ article.menor .lista li, article.menor .dica { font-size:13px; }
 .trends .tr { margin-left:auto; color:var(--muted); font-size:12px; white-space:nowrap; }
 @container (max-width:360px) { .trends { grid-template-columns:1fr; } }
 article { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:24px; display:flex; flex-direction:column; gap:16px; }
+.head > h2 { min-width:0; }
 .head { display:flex; justify-content:space-between; align-items:center; gap:12px; }
 h2 { margin:0; font-family:Manrope, sans-serif; font-size:20px; font-weight:700; }
 .tag { display:inline-flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); font-weight:600; }
@@ -303,15 +316,16 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
   </article>
 
   <article class="a-energia">
-    <div class="head"><h2>Energia</h2><span class="tag"><span class="dot" style="background:#D4B062"></span>notícias do setor</span></div>
+    <div class="head"><h2><label class="sr" for="temaSel">Tema</label><select id="temaSel" class="tit-sel" title="Escolha o tema que o Poderômetro acompanha para você"></select></h2><span class="tag"><span class="dot" style="background:#6F9BE8"></span>Poderômetro</span></div>
     <ul class="lista" id="l-energia"><li class="carregando">Carregando…</li></ul>
-    <a class="more" href="https://news.google.com/search?q=energia%20solar%20OR%20%22gera%C3%A7%C3%A3o%20distribu%C3%ADda%22%20OR%20ANEEL&hl=pt-BR&gl=BR&ceid=BR%3Apt-419">Mais notícias de energia →</a>
+    <a class="more" href="https://poderometro.com.br">Abrir o Poderômetro →</a>
   </article>
 
   <article class="a-flamengo">
-    <div class="head"><h2>Flamengo</h2><span class="tag"><span class="dot" style="background:#C8102E"></span>Mengão</span></div>
+    <div class="head"><h2><label class="sr" for="espSel">Assunto</label><select id="espSel" class="tit-sel" title="Escolha o time ou a luta"></select></h2><span class="tag"><span class="dot" id="espDot" style="background:#C8102E"></span>esporte</span></div>
+    <form id="espForm" class="espform" hidden><input id="espCampo" type="text" maxlength="40" placeholder="Digite: ex. Corinthians, UFC, vôlei" autocomplete="off"><button type="submit">Ver</button></form>
     <ul class="lista" id="l-flamengo"><li class="carregando">Carregando…</li></ul>
-    <a class="more" href="https://ge.globo.com/futebol/times/flamengo/">Abrir no ge →</a>
+    <a class="more" id="espMais" href="https://ge.globo.com/">Mais notícias →</a>
   </article>
 
 
@@ -473,6 +487,96 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
       return '<li><a class="tit" href="' + esc(n.url) + '">' + esc(n.titulo) + '</a><span class="meta">' + esc(n.fonte) + (n.data ? ' · ' + esc(quando(n.data)) : '') + '</span></li>';
     }).join('');
   }
+
+  // ---------- Poderômetro por tema (mesmos temas do perfil do Poderômetro) ----------
+  var ENERGIA_RX = /energia|eletric|eletrobras|aneel|ons\b|ccee|tarifa social|conta de luz|bandeira tarifaria|geracao distribuida|micro ?e minigeracao|microgeracao|minigeracao|mercado livre|setor eletrico|hidreletric|termeletric|usina|fotovoltaic|painel solar|energia solar|eolic|itaipu|apagao|\bcde\b|desenvolvimento energetico/;
+  var TEMAS = {
+    energia: { nome: 'Energia', ic: '⚡', rx: ENERGIA_RX },
+    saude: { nome: 'Saúde', ic: '🩺', rx: /saude|\bsus\b|hospital|medic[oa]s?\b|medicament|vacina|anvisa|plano de saude/ },
+    educacao: { nome: 'Educação', ic: '📚', rx: /educacao|escola|ensino|professor|universidad|fundeb|\benem\b|creche/ },
+    seguranca: { nome: 'Segurança', ic: '🛡', rx: /seguranca publica|policia|crime|criminal|penal\b|codigo penal|presidi|arma de fogo|armas\b|trafico/ },
+    impostos: { nome: 'Impostos', ic: '🧾', rx: /imposto|tribut|\bicms\b|\biss\b|\bipva\b|\biptu\b|imposto de renda|\bcbs\b|\bibs\b|aliquota/ },
+    inss: { nome: 'INSS e aposentadoria', ic: '👵', rx: /\binss\b|aposentad|previdenc|pensao|pensionista|beneficio previdenciario/ },
+    eleicoes: { nome: 'Eleições', ic: '🗳', rx: /eleic|eleitoral|\btse\b|urna|candidat|inelegib|propaganda eleitoral/ },
+    economia: { nome: 'Economia e empregos', ic: '📈', rx: /emprego|salario|trabalhist|\bclt\b|jornada de trabalho|\bmei\b|microempreendedor|juros|inflacao|credito/ },
+    pcd: { nome: 'Pessoa com deficiência', ic: '♿', rx: /deficien|\bpcd\b|autis|\btea\b|acessibilid|libras|cego|surd|cadeirant/ }
+  };
+  var DECISAO_RX = /\b(valida|invalida|decide|decidiu|mantem|derruba|determina|suspende|confirma|nega|anula|declara|reconhece|autoriza|proibe|garante|condena|absolve|homologa|referenda|afasta|restabelece|limita|fixa|julga)\b/;
+  var RUIDO_RX = /^(confira|veja|acompanhe)|pauta|expediente|recebe |visita|audiencia publica|cronograma|seminario|lanca|inscric/;
+  function norm(s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); }
+  var PODER = null, tema = 'energia';
+  try { var tm = localStorage.getItem('sd-tema'); if (tm && TEMAS[tm]) tema = tm; } catch (e) {}
+  (function () {
+    var s = document.getElementById('temaSel');
+    s.innerHTML = Object.keys(TEMAS).map(function (k) { return '<option value="' + k + '">' + TEMAS[k].ic + ' ' + TEMAS[k].nome + '</option>'; }).join('');
+    s.value = tema;
+    s.addEventListener('change', function () { tema = s.value; try { localStorage.setItem('sd-tema', tema); } catch (e) {} desenhaPoder(); });
+  })();
+  function itemHtml(n, rotulo) {
+    return '<li><a class="tit" href="' + esc(n.url) + '">' + esc(n.titulo) + '</a><span class="meta">' + esc(rotulo || n.fonte) + (n.data ? ' · ' + esc(quando(n.data)) : '') + '</span></li>';
+  }
+  function desenhaPoder() {
+    var el = document.getElementById('l-energia');
+    if (!PODER || PODER.erro || !PODER.itens) { el.innerHTML = '<li class="aviso">O Poderômetro não respondeu agora. Tente de novo em alguns minutos.</li>'; return; }
+    var T = TEMAS[tema], limite = Date.now() - 30 * 864e5;
+    var recente = function (n) { var t = Date.parse(String(n.data).replace(' ', 'T')); return isNaN(t) || t >= limite; };
+    var doTema = PODER.itens.filter(function (n) { return recente(n) && T.rx.test(norm(n.titulo + ' ' + n.texto)); }).slice(0, 4);
+    var h = doTema.map(function (n) { return itemHtml(n); }).join('');
+    if (doTema.length < 4) {
+      var usados = {}; doTema.forEach(function (n) { usados[n.url] = 1; });
+      var stf = PODER.itens.filter(function (n) { var t = norm(n.titulo); return n.src === 'stf' && !usados[n.url] && DECISAO_RX.test(t) && !RUIDO_RX.test(t); }).slice(0, 4 - doTema.length);
+      if (stf.length) h += '<li class="sep">' + (doTema.length ? 'E o que o STF decidiu' : 'Nada novo sobre ' + esc(T.nome) + ' · o que o STF decidiu') + '</li>' + stf.map(function (n) { return itemHtml(n, 'STF decidiu'); }).join('');
+    }
+    el.innerHTML = h || '<li class="aviso">Nada novo no Poderômetro agora.</li>';
+  }
+
+  // ---------- Esporte: time ou luta escolhida por você ----------
+  var ESPORTES = [
+    { k: 'Flamengo', q: 'Flamengo futebol', cor: '#C8102E', link: 'https://ge.globo.com/futebol/times/flamengo/' },
+    { k: 'Vasco', q: 'Vasco da Gama futebol', cor: '#9a9a9a', link: 'https://ge.globo.com/futebol/times/vasco/' },
+    { k: 'Fluminense', q: 'Fluminense futebol', cor: '#7A0A2E', link: 'https://ge.globo.com/futebol/times/fluminense/' },
+    { k: 'Botafogo', q: 'Botafogo futebol', cor: '#bbbbbb', link: 'https://ge.globo.com/futebol/times/botafogo/' },
+    { k: 'Muay thai', q: 'muay thai', cor: '#D4B062', link: 'https://www.google.com/search?tbm=nws&q=muay+thai' },
+    { k: 'MMA', q: 'MMA UFC', cor: '#D4B062', link: 'https://ge.globo.com/combate/' },
+    { k: 'Jiu-jítsu', q: 'jiu-jitsu', cor: '#D4B062', link: 'https://ge.globo.com/combate/' },
+    { k: 'Judô', q: 'judô', cor: '#D4B062', link: 'https://ge.globo.com/olimpiadas/judo/' }
+  ];
+  var esporte = 'Flamengo';
+  try { esporte = localStorage.getItem('sd-esporte') || 'Flamengo'; } catch (e) {}
+  function esporteInfo(nome) {
+    for (var i = 0; i < ESPORTES.length; i++) if (ESPORTES[i].k === nome) return ESPORTES[i];
+    return { k: nome, q: nome, cor: '#D4B062', link: 'https://www.google.com/search?tbm=nws&q=' + encodeURIComponent(nome) };
+  }
+  function montaEspSel() {
+    var s = document.getElementById('espSel'), lista = ESPORTES.map(function (e) { return e.k; });
+    if (lista.indexOf(esporte) < 0) lista.push(esporte);
+    s.innerHTML = lista.map(function (k) { return '<option>' + esc(k) + '</option>'; }).join('') + '<option value="__outro">Outro…</option>';
+    s.value = esporte;
+  }
+  function carregaEsporte() {
+    var inf = esporteInfo(esporte), el = document.getElementById('l-flamengo');
+    document.getElementById('espDot').style.background = inf.cor;
+    document.getElementById('espMais').href = inf.link;
+    el.innerHTML = '<li class="carregando">Carregando…</li>';
+    pega('/api/noticias?q=' + encodeURIComponent(inf.q)).then(function (d) {
+      lista('l-flamengo', d, 'Não achei notícias recentes de ' + esc(inf.k) + ' agora. Tente de novo em alguns minutos.');
+    }).catch(function () { el.innerHTML = '<li class="aviso">As notícias não carregaram agora. Tente de novo em alguns minutos.</li>'; });
+  }
+  (function () {
+    var s = document.getElementById('espSel'), f = document.getElementById('espForm'), c = document.getElementById('espCampo');
+    montaEspSel();
+    s.addEventListener('change', function () {
+      if (s.value === '__outro') { f.hidden = false; c.focus(); return; }
+      f.hidden = true; esporte = s.value; try { localStorage.setItem('sd-esporte', esporte); } catch (e) {} carregaEsporte();
+    });
+    f.addEventListener('submit', function (ev) {
+      ev.preventDefault(); var v = c.value.trim(); if (!v) return;
+      esporte = v.slice(0, 40); try { localStorage.setItem('sd-esporte', esporte); } catch (e) {}
+      f.hidden = true; c.value = ''; montaEspSel(); carregaEsporte();
+    });
+    carregaEsporte();
+  })();
+
   var chave = null;
   try {
     var k = new URLSearchParams(location.search).get('k');
@@ -502,8 +606,7 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
           var ref = mm ? (mm[1].length === 4 ? mm[2] + '/' + mm[1] : mm[1] + '/' + mm[2]) : '';
           set('bref', (ref ? ref + ' · ' : '') + (bd.fonte === 'ANEEL' ? 'ANEEL' : 'confirmada por você'));
         } else { set('bref', 'indisponível agora'); }
-        lista('l-energia', d.energia, 'As notícias de energia não carregaram agora. Tente de novo em alguns minutos.');
-        lista('l-flamengo', d.flamengo, 'As notícias do Flamengo não carregaram agora. Tente de novo em alguns minutos.');
+        PODER = d.poder; desenhaPoder();
         var tr = d.trends, elT = document.getElementById('l-trends');
         elT.innerHTML = (tr && tr.itens && tr.itens.length) ? tr.itens.map(function (x) {
           return '<li><a href="' + esc(x.url) + '">' + esc(x.termo) + '</a>' + (x.trafego ? '<span class="tr">' + esc(x.trafego) + '</span>' : '') + '</li>';
@@ -515,7 +618,7 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
         if (a && a.bloqueada) {
           el.innerHTML = '<li class="aviso">' + (a.configurada ? 'Abra o SmartDisplay pelo seu link pessoal para ver a agenda.' : 'O Prumo ainda não foi ligado ao SmartDisplay. Falta um passo de configuração.') + '</li>';
         } else if (!a || a.erro) {
-          el.innerHTML = '<li class="aviso">A agenda não carregou agora. Tente de novo em alguns minutos.</li>';
+          el.innerHTML = '<li class="aviso" style="display:block">A agenda não carregou agora. Tente de novo em alguns minutos.' + (a && a.erro ? '<br><small>Motivo: ' + esc(a.erro) + '</small>' : '') + '</li>';
         } else if (a.fonte === 'prumo') {
           var h = '';
           (a.aniversarios || []).forEach(function (n) { h += '<li><span class="h">🎂</span><span>Aniversário: ' + esc(n) + '</span></li>'; });
@@ -533,7 +636,7 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
         }
       })
       .catch(function () {
-        ['l-energia', 'l-flamengo', 'l-pcd', 'l-agenda', 'l-trends'].forEach(function (id) { document.getElementById(id).innerHTML = '<li class="aviso">Não carregou agora. Tente de novo em alguns minutos.</li>'; });
+        ['l-energia', 'l-pcd', 'l-agenda', 'l-trends'].forEach(function (id) { document.getElementById(id).innerHTML = '<li class="aviso">Não carregou agora. Tente de novo em alguns minutos.</li>'; });
         var g2 = document.getElementById('globo'); if (g2 && !g2.src) g2.src = '/globo.html?card=1';
       });
   }
