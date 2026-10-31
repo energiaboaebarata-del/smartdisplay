@@ -123,6 +123,30 @@ h2 { margin:0; font-family:Manrope, sans-serif; font-size:20px; font-weight:700;
 .alarmes .al-bt button { height:32px; padding:0 10px; font-size:12px; border-radius:8px; background:transparent; color:var(--muted); border:1px solid var(--border); font-weight:600; }
 .aviso-topo { position:fixed; top:16px; left:50%; transform:translateX(-50%); z-index:60; background:#d1453b; color:#fff; padding:12px 18px; border-radius:12px; font-weight:700; font-size:15px; box-shadow:0 8px 24px rgba(0,0,0,.3); display:flex; gap:12px; align-items:center; max-width:calc(100% - 32px); }
 .aviso-topo button { height:32px; padding:0 10px; font-size:13px; background:#fff; color:#d1453b; border-radius:8px; }
+.faixa { display:flex; flex-wrap:wrap; gap:16px; align-items:flex-start; }
+.faixa .navs { flex:1 1 640px; display:flex; flex-direction:column; gap:28px; min-width:0; }
+.faixa nav.redes { margin-top:0; }
+.leds { flex:0 1 340px; display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-left:auto; }
+.led { display:flex; align-items:center; gap:10px; height:auto; min-height:56px; padding:10px 12px; border-radius:14px; background:var(--surface); border:1px solid var(--border); color:var(--text); text-align:left; font-weight:400; font-size:14px; cursor:pointer; }
+.led b { display:block; font-size:14px; }
+.led small { display:block; font-size:12px; color:var(--muted); line-height:1.3; }
+.luz { flex:0 0 14px; width:14px; height:14px; border-radius:50%; background:#6b6b6b; box-shadow:0 0 0 3px rgba(127,127,127,.15); }
+.luz.verde { background:#2f9e5a; box-shadow:0 0 10px #2f9e5a; }
+.luz.amarelo { background:#e8b400; box-shadow:0 0 10px #e8b400; }
+.luz.laranja { background:#f28a2c; box-shadow:0 0 10px #f28a2c; }
+.luz.vermelho { background:#d1453b; box-shadow:0 0 12px #d1453b; animation:pisca 1.4s ease-in-out infinite; }
+@keyframes pisca { 50% { opacity:.45; } }
+@media (prefers-reduced-motion:reduce) { .luz.vermelho { animation:none; } }
+.jk-grade { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px; }
+.jk-grade div { border:1px solid var(--border); border-radius:12px; padding:10px 12px; }
+.jk-grade span { display:block; font-size:12px; color:var(--muted); }
+.jk-grade strong { font-family:Manrope, sans-serif; font-size:20px; }
+.jk-semana { display:grid; grid-template-columns:repeat(7, 1fr); gap:6px; text-align:center; font-size:12px; color:var(--muted); }
+.jk-semana b { display:block; font-size:14px; color:var(--text); }
+.jk-acoes { display:flex; flex-wrap:wrap; gap:8px; }
+.jk-acoes button, .jk-acoes a { height:40px; padding:0 14px; font-size:14px; border-radius:10px; display:inline-flex; align-items:center; }
+.jk-acoes .sec { background:transparent; color:var(--text); border:1px solid var(--border); font-weight:600; }
+.jk-acoes a { border:1px solid var(--border); font-weight:600; }
 footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; padding-top:12px; border-top:1px solid var(--border); font-size:13px; color:var(--muted); }
 @media (max-width:600px){ h1{font-size:30px} .cards{grid-template-columns:1fr} }
 </style>
@@ -145,6 +169,8 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
   </form>
 </header>
 
+<div class="faixa">
+<div class="navs">
 <nav aria-label="Atalhos dos meus apps">
   <a href="https://www.s2bt.com.br">S2BT Energia</a>
   <a href="https://poderometro.com.br">Poderômetro</a>
@@ -164,6 +190,12 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
   <a href="https://www.instagram.com/s2bt.energia/">Instagram · @s2bt.energia</a>
   <a href="https://business.google.com/">Google Meu Negócio</a>
 </nav>
+</div>
+<aside class="leds" aria-label="Afazeres urgentes">
+  <button type="button" class="led" id="ledJoka"><span class="luz" id="luzJoka"></span><span><b>Joka</b><small id="txtJoka">carregando…</small></span></button>
+  <button type="button" class="led" id="ledPost"><span class="luz" id="luzPost"></span><span><b>Post do dia</b><small id="txtPost">em breve</small></span></button>
+</aside>
+</div>
 
 <section class="ind" aria-label="Indicadores econômicos">
   <div class="tile clicavel" data-serie="moeda" role="button" tabindex="0" aria-label="Ver gráfico da moeda"><span id="moNome">Dólar</span><strong id="usd">—</strong><small id="usdv">carregando…</small><small class="fut" id="usdf"></small><small class="fut" id="moDica">Toque para trocar: Dólar · Euro · Libra · Iene</small></div>
@@ -251,6 +283,7 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
       <button type="submit">Criar alarme</button>
       <span class="galmsg" id="galMsg"></span>
     </form>
+    <div id="gjoka" hidden></div>
     <div class="leitura" id="gleitura">&nbsp;</div>
     <svg id="gsvg" viewBox="0 0 800 300" preserveAspectRatio="none" role="img" aria-label="Gráfico"></svg>
     <div class="fonte" id="gfonte"></div>
@@ -479,7 +512,11 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     carregaGrafico(); document.getElementById('gfechar').focus();
   }
   function bilhoes(v) { if (v == null) return '—'; return v >= 1e12 ? 'R$ ' + br(v / 1e12, 2) + ' tri' : v >= 1e9 ? 'R$ ' + br(v / 1e9, 1) + ' bi' : 'R$ ' + br(v / 1e6, 0) + ' mi'; }
-  function fechaGrafico() { alMostraForm(null); document.getElementById('gfundo').hidden = true; document.getElementById('gsel').hidden = true; document.getElementById('gselMo').hidden = true; gAtual = null; }
+  function fechaGrafico() {
+    ['gper', 'gsvg', 'gleitura', 'gfonte'].forEach(function (id) { document.getElementById(id).style.display = ''; });
+    document.querySelectorAll('#gper button[data-m]').forEach(function (b) { b.style.display = ''; });
+    var gj = document.getElementById('gjoka'); gj.hidden = true; gj.style.display = 'none';
+    alMostraForm(null); document.getElementById('gfundo').hidden = true; document.getElementById('gsel').hidden = true; document.getElementById('gselMo').hidden = true; gAtual = null; }
   function carregaGrafico() {
     if (gConf && gConf.acao) return carregaAcao();
     if (gConf && gConf.indice) return carregaIndice();
@@ -773,8 +810,67 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     if (rel) alPost({ acao: 'religar', id: rel.dataset.rel }).then(function (j) { alDesenha(j.alertas || []); }).catch(function () {});
   });
 
+  // ---------- LED do Joka ----------
+  var jkDados = null;
+  var ML_RACAO = 'https://lista.mercadolivre.com.br/racao-nd-raca-mini-2,5kg_OrderId_PRICE';
+  function jkUrl() { return '/api/joka' + (chave ? '?k=' + encodeURIComponent(chave) : ''); }
+  function jkLed(d) {
+    var l = document.getElementById('luzJoka'); l.className = 'luz ' + (d ? d.led : '');
+    set('txtJoka', d ? d.aviso : 'abra pelo link pessoal');
+  }
+  function jkCarregar() {
+    if (!chave) { jkLed(null); return; }
+    pega(jkUrl()).then(function (d) { if (!d || d.erro) throw d && d.erro; jkDados = d; jkLed(d); if (gAtual === 'joka') jkDesenha(); })
+      .catch(function (e) { set('txtJoka', typeof e === 'string' ? e : 'indisponível agora'); });
+  }
+  function jkAcao(acao, extra) {
+    var corpo = Object.assign({ acao: acao }, extra || {});
+    return fetch(jkUrl(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corpo) })
+      .then(function (r) { return r.json(); }).then(function (d) { if (d.erro) throw d.erro; jkDados = d; jkLed(d); jkDesenha(); });
+  }
+  function jkDesenha() {
+    var d = jkDados, el = document.getElementById('gjoka'); if (!d) { el.innerHTML = '<p class="aviso">Carregando…</p>'; return; }
+    function g(v) { return v >= 1000 ? br(v / 1000, 2) + ' kg' : br(v, 0) + ' g'; }
+    function cmp(a, b) { if (!b) return ''; var p = (a / b - 1) * 100; return (p >= 0 ? '▲ ' : '▼ ') + br(Math.abs(p), 0) + '% vs. média'; }
+    var dias = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+    var dt = function (iso) { return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }); };
+    el.innerHTML =
+      '<div class="jk-grade">' +
+        '<div><span>No alimentador</span><strong>' + g(d.tanqueG) + '</strong><span>≈ ' + br(d.tanqueDias, 1) + ' dias · enchido ' + dt(d.tanqueCheio) + (d.tanqueEstimado ? ' (estimado)' : '') + '</span></div>' +
+        '<div><span>Ração total (pacote + tanque)</span><strong>≈ ' + br(d.pacoteDias, 1) + ' dias</strong><span>pacote aberto ' + dt(d.pacoteAberto) + ' · ' + g(d.pacoteG) + ' no saco</span></div>' +
+        '<div><span>Consumo médio do pacote</span><strong>' + g(d.mediaPacote) + '/dia</strong><span>' + cmp(d.mediaPacote, d.mediaAcum) + ' acumulada (' + g(d.mediaAcum) + ')</span></div>' +
+        '<div><span>Últimas 24h</span><strong>' + g(d.ultimas24h) + '</strong><span>' + cmp(d.ultimas24h, d.mediaPacote) + ' do pacote</span></div>' +
+      '</div>' +
+      '<div><span class="fonte">Média por dia da semana (últimos 28 dias)</span><div class="jk-semana">' +
+        d.porDiaSemana.map(function (v, i) { return '<div>' + dias[i] + '<b>' + (v == null ? '—' : g(v)) + '</b></div>'; }).join('') + '</div></div>' +
+      '<div class="jk-acoes">' +
+        '<button type="button" id="jkAlimentar" title="Precisa ligar a Tuya">🍖 Alimentar o Joka agora</button>' +
+        '<button type="button" class="sec" data-jk="extra">+1 dose extra (já soltei)</button>' +
+        '<button type="button" class="sec" data-jk="tanque">Enchi o alimentador</button>' +
+        '<button type="button" class="sec" data-jk="pacote">Abri pacote novo</button>' +
+        '<a href="' + ML_RACAO + '">🛒 Ração N&amp;D mini no Mercado Livre</a>' +
+      '</div>' +
+      '<p class="fonte">Estimativa pela programação (7h: 3 · 13h: 1 · 18h: 2 porções de ' + br(d.config.porcaoG, 1) + ' g) mais as doses extras registradas. Com a Tuya ligada, passa a usar o que o alimentador realmente soltou.</p>';
+  }
+  function abreJoka() {
+    gAtual = 'joka'; gConf = { joka: true };
+    document.getElementById('gfundo').hidden = false;
+    document.getElementById('gtitulo').textContent = 'Ração do Joka';
+    set('gresumo', jkDados ? jkDados.aviso : '');
+    ['gper', 'gsvg', 'gleitura', 'gfonte'].forEach(function (id) { document.getElementById(id).style.display = 'none'; });
+    var gp = document.getElementById('gper'); gp.style.display = ''; gp.querySelectorAll('button[data-m]').forEach(function (b) { b.style.display = 'none'; });
+    var el = document.getElementById('gjoka'); el.hidden = false; el.style.display = 'flex'; el.style.flexDirection = 'column'; el.style.gap = '14px';
+    jkDesenha(); jkCarregar(); document.getElementById('gfechar').focus();
+  }
+  document.getElementById('ledJoka').addEventListener('click', abreJoka);
+  document.getElementById('gjoka').addEventListener('click', function (ev) {
+    var b = ev.target.closest('[data-jk]');
+    if (b) { b.disabled = true; jkAcao(b.dataset.jk).catch(function () {}).then(function () { b.disabled = false; }); }
+    if (ev.target.closest('#jkAlimentar')) { ev.target.closest('#jkAlimentar').textContent = 'Em breve: precisa ligar a Tuya'; }
+  });
+
   function atualiza() {
-    clima(); cambio(); bc(); meusSites(); acDesenha(); indCard(); alCarregar();
+    clima(); cambio(); bc(); meusSites(); acDesenha(); indCard(); alCarregar(); jkCarregar();
     set('atualizado', 'Atualizado às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
   }
   atualiza();
