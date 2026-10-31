@@ -196,8 +196,11 @@ h2 { margin:0; font-family:Manrope, sans-serif; font-size:20px; font-weight:700;
   .faixa .leds { grid-column:5; }
 }
 .tile.conta { justify-content:center; }
-.tile.conta strong { display:flex; align-items:center; gap:10px; font-size:18px; min-width:0; }
-.tile.conta strong #contasNome { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text); }
+.tile.conta .ct-tit { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700; min-width:0; margin-top:2px; }
+.tile.conta .ct-tit .luz { flex-basis:12px; width:12px; height:12px; }
+.tile.conta .ct-tit #contasNome { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text); font-size:14px; }
+.tile.conta #contasValor { font-size:24px; line-height:1.15; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.tile.conta #contasValor:empty { display:none; }
 .ct-lista { display:flex; flex-direction:column; }
 .ct-item { display:grid; grid-template-columns:14px 1fr auto; gap:6px 12px; align-items:center; padding:10px 0; border-bottom:1px solid var(--border); }
 .ct-item b { font-size:15px; }
@@ -294,7 +297,8 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
   </div>
   <div class="tile clicavel conta" id="contasTile" role="button" tabindex="0" aria-label="Abrir contas e despesas programadas" title="Clique para programar contas e despesas">
     <span>Contas e despesas</span>
-    <strong><span class="luz" id="luzContas"></span><span id="contasNome">—</span></strong>
+    <b class="ct-tit"><span class="luz" id="luzContas"></span><span id="contasNome">—</span></b>
+    <strong id="contasValor"></strong>
     <small id="contasTxt">carregando…</small>
   </div>
   <aside class="leds" aria-label="Afazeres urgentes">
@@ -1146,6 +1150,7 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
   }
   function ctTile() {
     var luz = document.getElementById('luzContas');
+    set('contasValor', '');
     if (!CT || CT.erro) { luz.className = 'luz'; set('contasNome', '—'); set('contasTxt', CT && CT.erro ? CT.erro : 'indisponível agora'); return; }
     var f = ctFoco();
     if (!f) { luz.className = 'luz verde'; set('contasNome', CT.itens.length ? 'Tudo em dia' : 'Nenhuma conta'); set('contasTxt', CT.itens.length ? 'nada pendente' : 'clique para programar'); return; }
@@ -1153,10 +1158,9 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     var dd = f.data.slice(8, 10) + '/' + f.data.slice(5, 7), qt = n + (n === 1 ? ' conta' : ' contas');
     var faltam = dias(CT.hoje, f.data);
     luz.className = 'luz ' + (!f.acao ? 'verde' : f.tipo === 'proximo' ? (faltam <= 3 ? 'amarelo' : 'verde') : 'vermelho');
-    set('contasNome', (f.tipo === 'vencido' ? 'Vencido ' : f.tipo === 'hoje' ? 'Vence hoje ' : 'Próximo ') + reais(total));
-    set('contasTxt', f.tipo === 'vencido' ? qt + ' em atraso · desde ' + dd
-      : f.tipo === 'hoje' ? qt + ' · ' + dd
-      : 'dia ' + dd + ' · ' + qt + ' · ' + (faltam === 1 ? 'amanhã' : 'em ' + faltam + ' dias'));
+    set('contasNome', f.tipo === 'vencido' ? 'Vencido' : f.tipo === 'hoje' ? 'Vence hoje · ' + dd : 'Próximo · ' + dd);
+    set('contasValor', reais(total));
+    set('contasTxt', f.tipo === 'vencido' ? qt + ' em atraso · desde ' + dd : f.tipo === 'hoje' ? qt : qt + ' · ' + (faltam === 1 ? 'amanhã' : 'em ' + faltam + ' dias'));
   }
   function ctCarregar() {
     if (!chave) { CT = { erro: 'abra pelo link pessoal' }; ctTile(); return; }
