@@ -47,15 +47,16 @@ nav a { display:inline-flex; align-items:center; min-height:44px; padding:0 16px
 .tile strong span { font-size:inherit; color:inherit; }
 .cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(340px, 1fr)); gap:20px; align-items:start; }
 .cards.grade { display:grid; gap:20px; align-items:stretch; grid-template-columns:1fr;
-  grid-template-areas:"agenda" "acoes" "oferta" "pcd" "energia" "flamengo" "alarmes" "trends"; }
+  grid-template-areas:"oferta" "agenda" "acoes" "role" "pcd" "energia" "flamengo" "alarmes" "trends"; }
+.a-role{grid-area:role}
 .a-agenda{grid-area:agenda} .a-acoes{grid-area:acoes} .a-oferta{grid-area:oferta} .a-pcd{grid-area:pcd}
 .a-energia{grid-area:energia} .a-flamengo{grid-area:flamengo} .a-alarmes{grid-area:alarmes} .a-trends{grid-area:trends}
 @media (min-width:700px){ .cards.grade { grid-template-columns:repeat(2, minmax(0,1fr));
-  grid-template-areas:"agenda acoes" "oferta pcd" "energia flamengo" "alarmes trends"; } }
+  grid-template-areas:"agenda oferta" "acoes role" "pcd energia" "flamengo alarmes" "trends trends"; } }
 @media (min-width:1080px){ .cards.grade { grid-template-columns:repeat(3, minmax(0,1fr));
-  grid-template-areas:"agenda acoes oferta" "pcd energia flamengo" "alarmes trends trends"; } }
+  grid-template-areas:"agenda acoes oferta" "role pcd energia" "flamengo alarmes trends"; } }
 @media (min-width:1560px){ .cards.grade { grid-template-columns:repeat(4, minmax(0,1fr));
-  grid-template-areas:"agenda acoes oferta pcd" "energia flamengo trends alarmes"; } }
+  grid-template-areas:"agenda acoes role oferta" "pcd energia flamengo alarmes" "trends trends trends trends"; } }
 .cards.grade > article { min-width:0; }
 .cards.grade > article > .more, .cards.grade > article > .links, .cards.grade > article > .dica:last-child { margin-top:auto; }
 .cards.grade .lista a.tit { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
@@ -75,6 +76,15 @@ article.menor .lista li, article.menor .dica { font-size:13px; }
 .espform button { height:38px; padding:0 14px; }
 .lista li.sep { padding:8px 0 0; border-bottom:0; font-size:12px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--muted); }
 .lista li.sep + li { padding-top:6px; }
+.a-role { position:relative; overflow:hidden; }
+.orelha-btn { position:absolute; top:0; right:0; width:30px; height:30px; padding:0; border:0; border-radius:0 0 0 8px; cursor:pointer;
+  background:linear-gradient(225deg, var(--bg) 50%, var(--accent) 50%); box-shadow:-2px 2px 4px rgba(0,0,0,.18); transition:width .2s, height .2s; }
+.orelha-btn:hover, .orelha-btn:focus-visible { width:42px; height:42px; outline:none; }
+.a-role .head { padding-right:22px; }
+.role-modo { margin:-6px 0 0; font-size:13px; font-weight:700; color:var(--accent); }
+.lista.role li { display:grid; grid-template-columns:64px 1fr; gap:2px 10px; }
+.lista.role .rot { grid-row:span 2; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); padding-top:3px; }
+.lista.role .meta a { color:var(--muted); text-decoration:underline; }
 .a-trends { container-type:inline-size; }
 .trends { counter-reset:t; display:grid !important; grid-template-columns:1fr 1fr; column-gap:18px; }
 .trends li { counter-increment:t; flex-direction:row !important; align-items:baseline; gap:8px !important; padding:6px 0 !important; border-bottom:1px solid var(--border) !important; }
@@ -83,6 +93,7 @@ article.menor .lista li, article.menor .dica { font-size:13px; }
 .trends a { color:var(--text); font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
 .trends .tr { margin-left:auto; color:var(--muted); font-size:12px; white-space:nowrap; }
 @container (max-width:360px) { .trends { grid-template-columns:1fr; } }
+@container (min-width:900px) { .trends { grid-template-columns:repeat(5, minmax(0,1fr)); } }
 article { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:24px; display:flex; flex-direction:column; gap:16px; }
 .head > h2 { min-width:0; }
 .head { display:flex; justify-content:space-between; align-items:center; gap:12px; }
@@ -296,7 +307,7 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
 <div class="faixa">
   <div class="principais" aria-label="Atalhos principais">
     <a class="pri" href="https://www.s2bt.com.br">S2BT Energia</a>
-    <button type="button" class="pri" data-pop="network">Net Work ▾</button>
+    <button type="button" class="pri" data-pop="network">Network ▾</button>
     <button type="button" class="pri" data-pop="smartspin">Smart Spin ▾</button>
     <a class="pri" href="https://claude.ai">Claude</a>
   </div>
@@ -359,6 +370,14 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     <div class="links"><a class="more" href="https://www.s2bt.com.br/simular">Abrir o simulador →</a><a class="more" href="https://www.s2bt.com.br/globo">Globo em tela cheia →</a></div>
   </article>
 
+
+  <article class="a-role">
+    <button type="button" class="orelha-btn" id="roleModo" title="Trocar o programa: casal de dia ou noite" aria-label="Trocar o programa (casal de dia ou noite)"></button>
+    <div class="head"><h2>Rolê de hoje</h2><span class="tag"><span class="dot" style="background:#E0607E"></span><span id="roleTag">Rolê</span></span></div>
+    <p class="role-modo" id="roleModoTxt">☀️ Casal pela cidade · de dia</p>
+    <ul class="lista role" id="l-role"><li class="carregando">Carregando…</li></ul>
+    <a class="more" id="roleLink" href="https://rolebr.s2bt.com.br/">Abrir o Rolê →</a>
+  </article>
 
   <article class="a-pcd">
     <div class="head"><h2>Direitos PcD</h2><span class="tag"><span class="dot" style="background:#4FBF9F"></span>Inclui+</span></div>
@@ -628,6 +647,30 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     carregaEsporte();
   })();
 
+
+  // ---------- Rolê de hoje (sugestão do Rolê BR, pela cidade de acesso) ----------
+  var ROLE = null, roleModo = 'dia';
+  try { roleModo = localStorage.getItem('sd-role-modo') === 'noite' ? 'noite' : 'dia'; } catch (e) {}
+  var CAT_IC = { comer: '🍽', doce: '🍰', teatro: '🎭', cinema: '🎬', show: '🎵', praia: '🏖', trilha: '🥾', passeio: '🚶', cachoeira: '💧', esporte: '⚽' };
+  function roleDesenha() {
+    var el = document.getElementById('l-role');
+    set('roleModoTxt', roleModo === 'dia' ? '☀️ Casal pela cidade · de dia' : '🌙 Programa da noite');
+    if (!ROLE || ROLE.erro) { el.innerHTML = '<li class="aviso">O Rolê não respondeu agora. Tente de novo em alguns minutos.</li>'; return; }
+    set('roleTag', ROLE.nome || 'Rolê'); document.getElementById('roleLink').href = ROLE.link;
+    var ps = ROLE[roleModo] || [];
+    el.innerHTML = ps.length ? ps.map(function (p) {
+      return '<li><span class="rot">' + esc(p.rotulo) + '</span><a class="tit" href="' + esc(p.link) + '">' + (CAT_IC[p.cat] || '📍') + ' ' + esc(p.nome) + '</a>' +
+        '<span class="meta">' + esc(p.bairro) + (p.preco ? ' · ' + '$$$$'.slice(0, p.preco) : '') + ' · <a href="' + esc(p.mapa) + '" target="_blank" rel="noopener">mapa</a></span></li>';
+    }).join('') : '<li class="aviso">Sem sugestão para hoje nesta cidade.</li>';
+  }
+  document.getElementById('roleModo').addEventListener('click', function () {
+    roleModo = roleModo === 'dia' ? 'noite' : 'dia'; try { localStorage.setItem('sd-role-modo', roleModo); } catch (e) {} roleDesenha();
+  });
+  function roleCarregar(uf) {
+    pega('/api/role' + (uf ? '?uf=' + encodeURIComponent(uf) : '')).then(function (d) { ROLE = d; roleDesenha(); })
+      .catch(function () { ROLE = { erro: 1 }; roleDesenha(); });
+  }
+
   var chave = null;
   try {
     var k = new URLSearchParams(location.search).get('k');
@@ -664,6 +707,7 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
         }).join('') : '<li class="aviso">Os assuntos do momento não carregaram agora.</li>';
         lista('l-pcd', d.pcd, 'As notícias do Inclui+ não carregaram agora. Tente de novo em alguns minutos.');
         var g = document.getElementById('globo'), loc = d.local || {};
+        if (!ROLE) roleCarregar(loc.uf);
         if (g && !g.src) g.src = '/globo.html?card=1' + (loc.cidade ? '&cidade=' + encodeURIComponent(loc.cidade) : '') + (loc.uf ? '&uf=' + encodeURIComponent(loc.uf) : '');
         var a = d.agenda, el = document.getElementById('l-agenda');
         if (a && a.bloqueada) {
@@ -689,6 +733,7 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
       .catch(function () {
         ['l-energia', 'l-pcd', 'l-agenda', 'l-trends'].forEach(function (id) { document.getElementById(id).innerHTML = '<li class="aviso">Não carregou agora. Tente de novo em alguns minutos.</li>'; });
         var g2 = document.getElementById('globo'); if (g2 && !g2.src) g2.src = '/globo.html?card=1';
+        if (!ROLE) roleCarregar('');
       });
   }
 
@@ -1108,7 +1153,7 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     if (ev.target.closest('#jkAlimentar')) { ev.target.closest('#jkAlimentar').textContent = 'Em breve: precisa ligar a Tuya'; }
   });
 
-  // ---------- Painéis Smart Spin e Net Work ----------
+  // ---------- Painéis Smart Spin e Network ----------
   var PROJETOS = [
     { id: 'poderometro', nome: 'Poderômetro', desc: 'política em dados', url: 'https://poderometro.com.br' },
     { id: 'inclui', nome: 'Inclui+', desc: 'direitos PcD', url: 'https://pcd.s2bt.com.br' },
@@ -1292,7 +1337,7 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     } else if (qual === 'usinas') {
       usinaLista();
     } else {
-      set('popTitulo', 'Net Work');
+      set('popTitulo', 'Network');
       corpo.innerHTML = '<div class="blocos">' + NETWORK.map(function (b) {
         return '<div><h4>' + esc(b[0]) + '</h4><div class="lista-links">' + b[1].map(function (l) { return '<a href="' + l[1] + '">' + esc(l[0]) + '</a>'; }).join('') + '</div></div>';
       }).join('') + '</div>';
