@@ -246,6 +246,7 @@ h2 { margin:0; font-family:Manrope, sans-serif; font-size:20px; font-weight:700;
 .proj small { font-size:12px; color:var(--muted); }
 .proj .cont { align-self:flex-start; margin-top:6px; min-width:34px; height:24px; padding:0 8px; border-radius:999px; background:var(--btn); color:var(--btnText); font-size:12px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; }
 .proj.off { opacity:.55; pointer-events:none; }
+.nota-fluxo { margin:2px 0 0; font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .lista-links { display:flex; flex-direction:column; gap:8px; }
 .lista-links a { display:flex; align-items:center; min-height:44px; padding:0 14px; border-radius:12px; border:1px solid var(--border); color:var(--text); font-weight:600; font-size:14px; }
 .lista-links a:hover { border-color:var(--accent); text-decoration:none; }
@@ -1105,7 +1106,8 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     { id: 'prumo', nome: 'Prumo', desc: 'assessor pessoal', url: 'https://prumo.s2bt.com.br' },
     { id: 'bola', nome: 'Bola', desc: 'jornal esportivo', url: '' },
     { id: 'tatame', nome: 'Tatame', desc: 'lutas', url: '' },
-    { id: 'role', nome: 'Rolê', desc: 'turismo e passeios', url: 'https://rolebr.s2bt.com.br' }
+    { id: 'role', nome: 'Rolê', desc: 'turismo e passeios', url: 'https://rolebr.s2bt.com.br' },
+    { id: 'prisma', nome: 'Prisma', desc: 'íntegra dos fatos e viés da imprensa', url: '' }
   ];
   var NETWORK = [
     ['Redes', [['LinkedIn · Rafael', 'https://www.linkedin.com/in/rafaspinola/'], ['LinkedIn · S2BT', 'https://www.linkedin.com/company/s2bt-energia/'], ['@orafaelspinola', 'https://www.instagram.com/orafaelspinola/'], ['@s2bt.energia', 'https://www.instagram.com/s2bt.energia/']]],
@@ -1241,7 +1243,7 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
           var f = fluxo && fluxo[p.id], n = f ? f.dias30 : null;
           return '<a class="proj' + (p.url ? '' : ' off') + '" ' + (p.url ? 'href="' + p.url + '"' : 'aria-disabled="true"') + ' title="' + (f ? 'Hoje: ' + f.hoje + ' · 30 dias: ' + f.dias30 + ' · total: ' + f.total : 'Contador ainda sem dados') + '">' +
             '<span class="cont" aria-label="visitas em 30 dias">' + curto(n) + '</span><b>' + esc(p.nome) + '</b><small>' + esc(p.url ? p.desc : 'endereço a definir') + '</small></a>';
-        }).join('') + '</div><p class="fonte">O número é de visitantes nos últimos 30 dias (cada aparelho conta 1 vez por dia). Passe o mouse para ver hoje e o total.</p>';
+        }).join('') + '</div><p class="nota-fluxo">Visitantes nos últimos 30 dias (1 por aparelho por dia) · passe o mouse para ver hoje e o total</p>';
       };
       desenhar();
       pega('/api/fluxo').then(function (j) { if (j && !j.erro) { fluxo = j; desenhar(); } }).catch(function () {});

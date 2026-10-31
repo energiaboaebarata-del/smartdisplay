@@ -1,6 +1,6 @@
 // SmartDisplay — contador de visitas dos projetos (1 por aparelho por dia; o site chama este endereço).
 // Guarda no Cloudflare KV "ALERTAS", chave "fluxo:<site>", os últimos 400 dias.
-export const SITES = ["poderometro", "inclui", "agape", "prumo", "bola", "tatame", "role", "s2bt"];
+export const SITES = ["poderometro", "inclui", "agape", "prumo", "bola", "tatame", "role", "prisma", "s2bt"];
 const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "GET, POST, OPTIONS" };
 export async function onRequest({ request, env }) {
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
