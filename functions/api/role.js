@@ -21,20 +21,23 @@ function abreHoje(x, dow, hojeDM) {
   return false;
 }
 
-function parada(x, rotulo, cid) {
-  return { rotulo, nome: x.n, cat: x.c, bairro: x.b || x.r || "", desc: x.d || "", quando: x.quando || "", preco: x.p || 0,
-    mapa: "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent((x.local || x.n) + ", " + (x.b || "")),
+function parada(x, rotulo, cid, cidade) {
+  const onde = [String(x.local || x.n).split(";")[0].trim(), x.b, cidade].filter(Boolean).join(", ");
+  return { rotulo, nome: x.n, cat: x.c, tags: x.t || [], bairro: x.b || x.r || "", local: x.local || "", desc: x.d || "", quando: x.quando || "",
+    preco: x.p || 0, metro: !!x.metro, estac: !!x.estac, kids: !!x.kids, fonte: x.fonte || "",
+    mapa: "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(onde),
+    rota: "https://www.google.com/maps/dir/?api=1&destination=" + encodeURIComponent(onde),
     link: SITE + "#" + cid };
 }
 
-function roteiro(itens, plano, seed, cid) {
+function roteiro(itens, plano, seed, cid, cidade) {
   const usados = new Set(); let regiao = null; const out = [];
   plano.forEach((etapa, i) => {
     let cand = itens.filter(x => !usados.has(x.n) && etapa.f(x));
     const mesmaRegiao = regiao ? cand.filter(x => x.r === regiao) : [];
     if (mesmaRegiao.length) cand = mesmaRegiao;
     const x = sorteia(cand, semente(seed + ":" + i));
-    if (x) { usados.add(x.n); regiao = regiao || x.r; out.push(parada(x, etapa.rotulo, cid)); }
+    if (x) { usados.add(x.n); regiao = regiao || x.r; out.push(parada(x, etapa.rotulo, cid, cidade)); }
   });
   return out;
 }
@@ -64,10 +67,10 @@ export async function onRequest({ request }) {
     const drinks = x => tem(x, /\bbar\b|drinks|boteco|cervej|chopp/);
     const dia = roteiro(itens, [
       { rotulo: "Manhã", f: ar }, { rotulo: "Almoço", f: almoco }, { rotulo: "Tarde", f: tarde },
-    ], hoje + ":dia", cid);
+    ], hoje + ":dia", cid, C.cidade);
     const noite = roteiro(itens, [
       { rotulo: "Jantar", f: x => jantar(x) || almoco(x) }, { rotulo: "Programa", f: show }, { rotulo: "Drinks", f: drinks },
-    ], hoje + ":noite", cid);
+    ], hoje + ":noite", cid, C.cidade);
     return json({ cidade: C.cidade, nome: C.nome, link: SITE + "#" + cid, dia, noite });
   } catch (e) {
     return json({ erro: String(e.message || e), link: SITE }, 200);
