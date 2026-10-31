@@ -201,6 +201,12 @@ h2 { margin:0; font-family:Manrope, sans-serif; font-size:20px; font-weight:700;
 .ct-lista { display:flex; flex-direction:column; }
 .ct-item { display:grid; grid-template-columns:14px 1fr auto; gap:6px 12px; align-items:center; padding:10px 0; border-bottom:1px solid var(--border); }
 .ct-item b { font-size:15px; }
+.ct-item.foco { background:color-mix(in srgb, var(--accent) 12%, transparent); border:1px solid color-mix(in srgb, var(--accent) 55%, transparent); border-radius:12px; padding:10px 12px; margin:4px 0; }
+.ct-foco { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:baseline; padding:12px 14px; border-radius:12px; border:1px solid var(--border); }
+.ct-foco b { font-size:16px; }
+.ct-foco span { font-size:14px; font-weight:700; }
+.ct-foco.vencido, .ct-foco.hoje { border-color:#d1453b; }
+.ct-foco.vencido b, .ct-foco.hoje b { color:#d1453b; }
 .ct-item small { grid-column:2 / -1; color:var(--muted); font-size:12px; }
 .ct-item .val { font-weight:700; text-align:right; white-space:nowrap; }
 .ct-acoes { grid-column:2 / -1; display:flex; gap:8px; flex-wrap:wrap; }
@@ -1128,16 +1134,29 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     if (n === 1) return 'vence amanhã';
     return 'vence em ' + n + ' dias · ' + it.venc.slice(8, 10) + '/' + it.venc.slice(5, 7);
   }
+  // Foco do card: contas vencidas (todas somadas) ou, se não houver, todas do próximo dia de vencimento.
+  function ctFoco() {
+    var hoje = CT.hoje, pend = CT.itens.filter(function (i) { return i.status === 'pendente'; });
+    var venc = pend.filter(function (i) { return i.venc < hoje; });
+    if (venc.length) return { tipo: 'vencido', itens: venc, data: venc[0].venc, acao: true };
+    var sai = CT.itens.filter(function (i) { return i.status !== 'pago' && i.venc >= hoje; });   // pendentes + débito automático
+    if (!sai.length) return null;
+    var d = sai[0].venc, doDia = sai.filter(function (i) { return i.venc === d; });
+    return { tipo: d === hoje ? 'hoje' : 'proximo', itens: doDia, data: d, acao: doDia.some(function (i) { return i.status === 'pendente'; }) };
+  }
   function ctTile() {
     var luz = document.getElementById('luzContas');
     if (!CT || CT.erro) { luz.className = 'luz'; set('contasNome', '—'); set('contasTxt', CT && CT.erro ? CT.erro : 'indisponível agora'); return; }
-    var pend = CT.itens.filter(function (i) { return i.status === 'pendente'; });
-    var prox = pend[0];
-    if (!prox) { luz.className = 'luz verde'; set('contasNome', CT.itens.length ? 'Tudo em dia' : 'Nenhuma conta'); set('contasTxt', CT.itens.length ? 'nada pendente' : 'clique para programar'); return; }
-    var pior = pend.reduce(function (c, i) { var k = ctCor(i, CT.hoje); return k === 'vermelho' ? k : (c === 'vermelho' ? c : (k === 'amarelo' ? k : c)); }, 'verde');
-    luz.className = 'luz ' + pior;
-    set('contasNome', prox.nome);
-    set('contasTxt', ctPrazo(prox, CT.hoje) + ' · ' + reais(prox.valor));
+    var f = ctFoco();
+    if (!f) { luz.className = 'luz verde'; set('contasNome', CT.itens.length ? 'Tudo em dia' : 'Nenhuma conta'); set('contasTxt', CT.itens.length ? 'nada pendente' : 'clique para programar'); return; }
+    var total = f.itens.reduce(function (s, i) { return s + i.valor; }, 0), n = f.itens.length;
+    var dd = f.data.slice(8, 10) + '/' + f.data.slice(5, 7), qt = n + (n === 1 ? ' conta' : ' contas');
+    var faltam = dias(CT.hoje, f.data);
+    luz.className = 'luz ' + (!f.acao ? 'verde' : f.tipo === 'proximo' ? (faltam <= 3 ? 'amarelo' : 'verde') : 'vermelho');
+    set('contasNome', (f.tipo === 'vencido' ? 'Vencido ' : f.tipo === 'hoje' ? 'Vence hoje ' : 'Próximo ') + reais(total));
+    set('contasTxt', f.tipo === 'vencido' ? qt + ' em atraso · desde ' + dd
+      : f.tipo === 'hoje' ? qt + ' · ' + dd
+      : 'dia ' + dd + ' · ' + qt + ' · ' + (faltam === 1 ? 'amanhã' : 'em ' + faltam + ' dias'));
   }
   function ctCarregar() {
     if (!chave) { CT = { erro: 'abra pelo link pessoal' }; ctTile(); return; }
@@ -1167,12 +1186,19 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     var corpo = document.getElementById('popCorpo');
     if (!CT || CT.erro) { corpo.innerHTML = '<p class="ct-erro">' + esc(CT && CT.erro || 'Não carregou agora.') + '</p>'; return; }
     var hoje = CT.hoje, its = CT.itens;
-    var pendMes = its.filter(function (i) { return i.status === 'pendente' && dias(hoje, i.venc) <= 30; });
+    var pendMes = its.filter(function (i) { return i.status !== 'pago' && dias(hoje, i.venc) <= 30; });
     var fixoMensal = its.filter(function (i) { return i.tipo === 'fixo' && i.status !== 'pago'; }).reduce(function (s, i) {
       var f = { semanal: 52 / 12, mensal: 1, bimestral: .5, trimestral: 1 / 3, semestral: 1 / 6, anual: 1 / 12, unica: 0 }[i.freq] || 0; return s + i.valor * f; }, 0);
-    var h = '<div class="ct-resumo"><span>A pagar nos próximos 30 dias: <b>' + reais(pendMes.reduce(function (s, i) { return s + i.valor; }, 0)) + '</b> (' + pendMes.length + ')</span><span>Custo fixo por mês: <b>' + reais(fixoMensal) + '</b></span></div>';
+    var h = '<div class="ct-resumo"><span>Sai do caixa nos próximos 30 dias: <b>' + reais(pendMes.reduce(function (s, i) { return s + i.valor; }, 0)) + '</b> (' + pendMes.length + ')</span><span>Custo fixo por mês: <b>' + reais(fixoMensal) + '</b></span></div>';
+    var foco = ctFoco(), marcados = {};
+    if (foco) {
+      foco.itens.forEach(function (i) { marcados[i.id] = 1; });
+      var tf = foco.itens.reduce(function (s, i) { return s + i.valor; }, 0);
+      h += '<div class="ct-foco ' + foco.tipo + '"><b>' + (foco.tipo === 'vencido' ? 'Vencido' : foco.tipo === 'hoje' ? 'Vence hoje' : 'Próximo vencimento · ' + foco.data.slice(8, 10) + '/' + foco.data.slice(5, 7)) +
+        '</b><span>' + reais(tf) + ' em ' + foco.itens.length + (foco.itens.length === 1 ? ' conta' : ' contas') + ' (destacadas abaixo)</span></div>';
+    }
     h += '<div class="ct-lista">' + (its.length ? its.map(function (i) {
-      return '<div class="ct-item"><span class="luz ' + ctCor(i, hoje) + '"></span><b>' + esc(i.nome) + '</b><span class="val">' + reais(i.valor) + '</span>' +
+      return '<div class="ct-item' + (marcados[i.id] ? ' foco' : '') + '"><span class="luz ' + ctCor(i, hoje) + '"></span><b>' + esc(i.nome) + '</b><span class="val">' + reais(i.valor) + '</span>' +
         '<small>' + ctPrazo(i, hoje) + ' · ' + FREQ_TXT[i.freq] + ' · ' + ST_TXT[i.status] + ' · ' + (i.tipo === 'fixo' ? 'custo fixo' : 'despesa programada') + '</small>' +
         '<div class="ct-acoes">' + (i.status === 'pendente' ? '<button type="button" data-ct-pagar="' + i.id + '">Paguei ✓</button>' : '') +
         '<button type="button" class="editar" data-ct-editar="' + i.id + '">Editar</button><button type="button" class="editar" data-ct-apagar="' + i.id + '">Apagar</button></div></div>';
