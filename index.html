@@ -226,7 +226,7 @@ h2 { margin:0; font-family:Manrope, sans-serif; font-size:20px; font-weight:700;
 .pri { display:inline-flex; align-items:center; justify-content:center; min-height:48px; padding:0 18px; border-radius:999px; background:var(--surface); border:1px solid var(--border); color:var(--text); font-size:15px; font-weight:600; text-decoration:none; height:auto; cursor:pointer; font-family:inherit; }
 .pri:hover { border-color:var(--accent); text-decoration:none; }
 .icones { display:flex; gap:10px; flex:0 0 auto; }
-.ico { width:48px; height:48px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; background:var(--surface); border:1px solid var(--border); color:var(--text); }
+.ico { width:48px; height:48px; padding:0; cursor:pointer; flex:0 0 auto; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; background:var(--surface); border:1px solid var(--border); color:var(--text); }
 .ico:hover { border-color:var(--accent); }
 .ico svg { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
 .leds { display:flex; flex-direction:column; gap:8px; min-width:0; }
@@ -250,6 +250,15 @@ h2 { margin:0; font-family:Manrope, sans-serif; font-size:20px; font-weight:700;
 .lista-links { display:flex; flex-direction:column; gap:8px; }
 .lista-links a { display:flex; align-items:center; min-height:44px; padding:0 14px; border-radius:12px; border:1px solid var(--border); color:var(--text); font-weight:600; font-size:14px; }
 .lista-links a:hover { border-color:var(--accent); text-decoration:none; }
+.usinas { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:10px; }
+.usina { height:auto; min-height:64px; padding:12px 14px; border-radius:14px; border:1px solid var(--border); background:var(--surface); color:var(--text); text-align:left; display:flex; flex-direction:column; gap:4px; font-weight:700; font-size:15px; }
+.usina small { font-weight:400; font-size:12px; color:var(--muted); }
+.usina:hover { border-color:var(--accent); }
+.usina.off { opacity:.55; }
+.us-voltar { height:34px; padding:0 12px; font-size:13px; align-self:flex-start; }
+.us-ficha { display:flex; flex-direction:column; gap:8px; }
+.us-ficha .rot { font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin-top:6px; }
+.lista-links a small { margin-left:auto; color:var(--muted); font-weight:400; font-size:12px; padding-left:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .tile { position:relative; }
 .tile.orelha { overflow:hidden; }
 .tile.orelha::after { content:""; position:absolute; top:0; right:0; width:26px; height:26px; background:linear-gradient(225deg, var(--bg) 50%, var(--accent) 50%); border-bottom-left-radius:6px; box-shadow:-2px 2px 4px rgba(0,0,0,.18); transition:width .2s, height .2s; }
@@ -295,6 +304,7 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     <a class="ico" href="https://mail.google.com" aria-label="Gmail" title="Gmail"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></a>
     <a class="ico" href="https://calendar.google.com" aria-label="Google Agenda" title="Google Agenda"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></a>
     <a class="ico" href="https://web.whatsapp.com" aria-label="WhatsApp" title="WhatsApp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a8 8 0 0 1-11.8 7L4 20l1.5-4.1A8 8 0 1 1 20 11.5Z"/><path d="M9 9.5c.3 1.8 1.7 3.6 3.6 4.4l1.2-1.1 1.7.8-.4 1.4c-3 .2-6.4-3-6.6-6l1.4-.4.8 1.7-1.1 1.2"/></svg></a>
+    <button type="button" class="ico" data-pop="usinas" aria-label="Usinas parceiras" title="Usinas parceiras"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h3"/><path d="m14.5 17.5 1.2 1.2 2.3-2.4"/></svg></button>
   </div>
   <div class="tile clicavel conta" id="contasTile" role="button" tabindex="0" aria-label="Abrir contas e despesas programadas" title="Clique para programar contas e despesas">
     <span>Contas e despesas</span>
@@ -1113,6 +1123,38 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     ['Redes', [['LinkedIn · Rafael', 'https://www.linkedin.com/in/rafaspinola/'], ['LinkedIn · S2BT', 'https://www.linkedin.com/company/s2bt-energia/'], ['@orafaelspinola', 'https://www.instagram.com/orafaelspinola/'], ['@s2bt.energia', 'https://www.instagram.com/s2bt.energia/']]],
     ['BNI e Google', [['BNI Connect', 'https://www.bniconnectglobal.com/'], ['BNI Academy', 'https://www.bnibusinessbuilder.com/'], ['myBNI', 'https://www.mybni.com/'], ['Google Meu Negócio', 'https://business.google.com/']]]
   ];
+  // Usinas / geradoras parceiras: nome → ficha com acessos e contatos
+  var USINAS = [
+    { nome: 'IVI Energia', links: [['Entrada de clientes (cadastro)', 'https://rafael-spinola-cadastro.ivienergia.com/'], ['Financeiro · Portal do Parceiro', 'https://parceiro.ivienergia.com/']],
+      email: 'contato@ivienergia.com', tel: '(21) 4040-2794' },
+    { nome: 'FIT Energia', links: [['Dashboard', 'https://fitenergia.com.br/entrar']] },
+    { nome: 'SolarGrid' }, { nome: 'Luz Energia' }, { nome: 'GV Energia' }, { nome: 'Gedisa' }
+  ];
+  function usinaLista() {
+    set('popTitulo', 'Usinas parceiras');
+    document.getElementById('popCorpo').innerHTML = '<div class="usinas">' + USINAS.map(function (u, i) {
+      var n = (u.links || []).length + (u.email ? 1 : 0) + (u.tel ? 1 : 0);
+      return '<button type="button" class="usina' + (n ? '' : ' off') + '" data-usina="' + i + '">' + esc(u.nome) + '<small>' + (n ? n + (n === 1 ? ' acesso' : ' acessos e contatos') : 'a cadastrar') + '</small></button>';
+    }).join('') + '</div><p class="nota-fluxo">Toque no nome da geradora para ver todos os acessos e contatos.</p>';
+  }
+  function usinaFicha(i) {
+    var u = USINAS[i], h = '<div class="us-ficha"><button type="button" class="editar us-voltar" data-usina-voltar="1">← Todas as usinas</button>';
+    if (u.links && u.links.length) h += '<div class="rot">Acessos</div><div class="lista-links">' + u.links.map(function (l) {
+      return '<a href="' + l[1] + '" target="_blank" rel="noopener">' + esc(l[0]) + '<small>' + esc(l[1].replace(/^https?:\/\//, '').replace(/\/$/, '')) + '</small></a>'; }).join('') + '</div>';
+    if (u.email || u.tel) {
+      h += '<div class="rot">Contato</div><div class="lista-links">';
+      if (u.email) h += '<a href="mailto:' + u.email + '">✉ ' + esc(u.email) + '<small>e-mail</small></a>';
+      if (u.tel) { var d = u.tel.replace(/\D/g, ''); h += '<a href="tel:+55' + d + '">☎ ' + esc(u.tel) + '<small>ligar</small></a>'; }
+      h += '</div>';
+    }
+    if (!u.links && !u.email && !u.tel) h += '<p class="fonte">Ainda sem acessos cadastrados. Me passe os links, e-mail e telefone da ' + esc(u.nome) + ' que eu incluo aqui.</p>';
+    set('popTitulo', u.nome);
+    document.getElementById('popCorpo').innerHTML = h + '</div>';
+  }
+  document.getElementById('popCorpo').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-usina],[data-usina-voltar]'); if (!b) return;
+    if (b.dataset.usinaVoltar) usinaLista(); else usinaFicha(+b.dataset.usina);
+  });
   function curto(n) {
     if (n == null) return '—';
     if (n < 1000) return String(n);
@@ -1247,6 +1289,8 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
       };
       desenhar();
       pega('/api/fluxo').then(function (j) { if (j && !j.erro) { fluxo = j; desenhar(); } }).catch(function () {});
+    } else if (qual === 'usinas') {
+      usinaLista();
     } else {
       set('popTitulo', 'Net Work');
       corpo.innerHTML = '<div class="blocos">' + NETWORK.map(function (b) {
