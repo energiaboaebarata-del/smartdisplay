@@ -234,6 +234,14 @@ async function bandeira() {
   }
 }
 
+// ---------- Hoje no Prumo (somente leitura, senha PRUMO_TOKEN) ----------
+async function prumoHoje(env) {
+  const r = await fetch((env.PRUMO_URL || "https://prumo.s2bt.com.br") + "/api/hoje", { headers: { Authorization: "Bearer " + env.PRUMO_TOKEN } });
+  if (!r.ok) throw new Error("Prumo respondeu " + r.status);
+  const d = await r.json();
+  return { fonte: "prumo", ...d };
+}
+
 // ---------- Junta tudo ----------
 export async function onRequest(context) {
   const { request, env } = context;
@@ -241,13 +249,14 @@ export async function onRequest(context) {
   const uf = (url.searchParams.get("uf") || request.cf?.regionCode || "RJ").toUpperCase().slice(0, 2);
   const tarefas = { politica: politica(), pcd: pcd(), futuros: futuros(), bandeira: bandeira() };
   const chave = url.searchParams.get("k");
-  const agendaLiberada = env.SD_CHAVE && env.AGENDA_ICS && chave && chave === env.SD_CHAVE;
-  if (agendaLiberada) tarefas.agenda = agenda(env.AGENDA_ICS);
+  const temAgenda = env.PRUMO_TOKEN || env.AGENDA_ICS;
+  const agendaLiberada = env.SD_CHAVE && temAgenda && chave && chave === env.SD_CHAVE;
+  if (agendaLiberada) tarefas.agenda = env.PRUMO_TOKEN ? prumoHoje(env) : agenda(env.AGENDA_ICS);
   const nomes = Object.keys(tarefas);
   const res = await Promise.allSettled(Object.values(tarefas));
   const saida = { geradoEm: new Date().toISOString(), local: { cidade: request.cf?.city || "", uf } };
   res.forEach((r, i) => { saida[nomes[i]] = r.status === "fulfilled" ? r.value : { erro: String(r.reason && r.reason.message || r.reason) }; });
-  if (!agendaLiberada) saida.agenda = { bloqueada: true, configurada: Boolean(env.SD_CHAVE && env.AGENDA_ICS) };
+  if (!agendaLiberada) saida.agenda = { bloqueada: true, configurada: Boolean(env.SD_CHAVE && temAgenda) };
   return new Response(JSON.stringify(saida), {
     headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "private, max-age=300" },
   });

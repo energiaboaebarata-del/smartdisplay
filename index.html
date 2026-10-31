@@ -183,9 +183,9 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
   </article>
 
   <article>
-    <div class="head"><h2>Hoje</h2><span class="tag"><span class="dot" style="background:#E08F5A"></span>Google Agenda</span></div>
+    <div class="head"><h2>Hoje</h2><span class="tag"><span class="dot" style="background:#E08F5A"></span>Prumo</span></div>
     <ul class="lista agenda" id="l-agenda"><li class="carregando">Carregando…</li></ul>
-    <a class="more" href="https://calendar.google.com/calendar/r/day">Abrir a agenda de hoje →</a>
+    <a class="more" href="https://prumo.s2bt.com.br">Abrir o Prumo →</a>
   </article>
 
   <article>
@@ -401,9 +401,18 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
         if (g && !g.src) g.src = '/globo.html?card=1' + (loc.cidade ? '&cidade=' + encodeURIComponent(loc.cidade) : '') + (loc.uf ? '&uf=' + encodeURIComponent(loc.uf) : '');
         var a = d.agenda, el = document.getElementById('l-agenda');
         if (a && a.bloqueada) {
-          el.innerHTML = '<li class="aviso">' + (a.configurada ? 'Abra o SmartDisplay pelo seu link pessoal para ver a agenda.' : 'A agenda ainda não foi ligada. Falta um passo de configuração.') + '</li>';
+          el.innerHTML = '<li class="aviso">' + (a.configurada ? 'Abra o SmartDisplay pelo seu link pessoal para ver a agenda.' : 'O Prumo ainda não foi ligado ao SmartDisplay. Falta um passo de configuração.') + '</li>';
         } else if (!a || a.erro) {
           el.innerHTML = '<li class="aviso">A agenda não carregou agora. Tente de novo em alguns minutos.</li>';
+        } else if (a.fonte === 'prumo') {
+          var h = '';
+          (a.aniversarios || []).forEach(function (n) { h += '<li><span class="h">🎂</span><span>Aniversário: ' + esc(n) + '</span></li>'; });
+          (a.eventos || []).forEach(function (e) { h += '<li><span class="h">' + (e.hora || 'dia todo') + '</span><span>' + esc(e.titulo) + '</span></li>'; });
+          (a.tarefas || []).forEach(function (t) { h += '<li><span class="h">' + (t.hora || (t.atrasada ? 'atrasada' : 'tarefa')) + '</span><span>☐ ' + esc(t.titulo) + '</span></li>'; });
+          var rem = a.remedios || [];
+          if (rem.length) h += '<li><span class="h">💊</span><span>' + rem.map(function (r) { return (r.tomado ? '✔ ' : '') + esc(r.nome); }).join(' · ') + '</span></li>';
+          h += '<li><span class="h">💧</span><span>Água: ' + br((a.agua || 0) / 1000, 1) + ' L</span></li>';
+          el.innerHTML = h || '<li class="aviso">Nada marcado para hoje.</li>';
         } else if (!a.itens.length) {
           el.innerHTML = '<li class="aviso">Nada marcado para hoje.</li>';
         } else {
