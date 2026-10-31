@@ -239,6 +239,11 @@ h2 { margin:0; font-family:Manrope, sans-serif; font-size:20px; font-weight:700;
 .icones { display:flex; gap:10px; flex:0 0 auto; }
 .ico { width:48px; height:48px; padding:0; cursor:pointer; flex:0 0 auto; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; background:var(--surface); border:1px solid var(--border); color:var(--text); }
 .ico:hover { border-color:var(--accent); }
+.ico-casa { color:var(--accent); border-color:color-mix(in srgb, var(--accent) 45%, var(--border)); }
+.ico-casa .faisca { stroke-width:1.6; }
+.ico-casa:hover { box-shadow:0 0 12px color-mix(in srgb, var(--accent) 45%, transparent); }
+.icones { flex-wrap:nowrap; }
+@media (min-width:900px) and (max-width:1439px) { .icones { gap:6px; flex-wrap:wrap; align-content:center; } .ico { width:40px; height:40px; } .ico svg { width:19px; height:19px; } }
 .ico svg { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
 .leds { display:flex; flex-direction:column; gap:8px; min-width:0; }
 .led { width:100%; }
@@ -315,6 +320,7 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     <a class="ico" href="https://mail.google.com" aria-label="Gmail" title="Gmail"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></a>
     <a class="ico" href="https://calendar.google.com" aria-label="Google Agenda" title="Google Agenda"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></a>
     <a class="ico" href="https://web.whatsapp.com" aria-label="WhatsApp" title="WhatsApp"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a8 8 0 0 1-11.8 7L4 20l1.5-4.1A8 8 0 1 1 20 11.5Z"/><path d="M9 9.5c.3 1.8 1.7 3.6 3.6 4.4l1.2-1.1 1.7.8-.4 1.4c-3 .2-6.4-3-6.6-6l1.4-.4.8 1.7-1.1 1.2"/></svg></a>
+    <a class="ico ico-casa" id="atalhoCasa" href="http://192.168.0.57:8123/s2bt-energia" aria-label="Casa inteligente (painel do Joka)" title="Casa inteligente · painel do Joka (funciona na rede de casa)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11 12 4l8.5 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M12 10.2a3 3 0 0 0-1.8 5.4v1.2h3.6v-1.2A3 3 0 0 0 12 10.2Z"/><path d="M11 18.6h2"/><path d="M17.6 3.2v2.2M16.5 4.3h2.2" class="faisca"/></svg></a>
     <button type="button" class="ico" data-pop="usinas" aria-label="Usinas parceiras" title="Usinas parceiras"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h3"/><path d="m14.5 17.5 1.2 1.2 2.3-2.4"/></svg></button>
   </div>
   <div class="tile clicavel conta" id="contasTile" role="button" tabindex="0" aria-label="Abrir contas e despesas programadas" title="Clique para programar contas e despesas">
