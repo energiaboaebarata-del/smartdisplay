@@ -101,6 +101,28 @@ h2 { margin:0; font-family:Manrope, sans-serif; font-size:20px; font-weight:700;
 .acoes .preco { text-align:right; font-variant-numeric:tabular-nums; font-weight:700; font-size:15px; }
 .acoes .var { display:block; font-size:12px; font-weight:600; }
 .acoes .sobe { color:#2f9e5a; } .acoes .desce { color:#d1453b; }
+.seletor { display:flex; flex-wrap:wrap; gap:12px; align-items:center; }
+.seletor[hidden] { display:none; }
+.seletor .opcoes { display:flex; flex-wrap:wrap; gap:6px; }
+.seletor .opcoes button { height:40px; padding:0 14px; font-size:14px; border-radius:10px; background:transparent; color:var(--text); border:1px solid var(--border); font-weight:600; }
+.seletor .opcoes button[aria-checked="true"] { background:var(--btn); color:var(--btnText); border-color:var(--btn); }
+.seletor .cripto { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted); }
+.seletor .cripto[hidden] { display:none; }
+.seletor select { height:40px; padding:0 10px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-size:14px; font-family:inherit; }
+.galarme { display:flex; flex-wrap:wrap; align-items:center; gap:8px; font-size:14px; padding:10px 12px; border:1px dashed var(--border); border-radius:12px; }
+.galarme[hidden] { display:none; }
+.galarme select, .galarme input { height:38px; padding:0 10px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-size:14px; font-family:inherit; }
+.galarme input { width:110px; }
+.galarme button { height:38px; font-size:14px; padding:0 14px; }
+.galmsg { font-size:13px; color:var(--muted); }
+.alarmes li { flex-direction:row; justify-content:space-between; align-items:center; gap:10px; }
+.alarmes .al-txt { font-size:14px; }
+.alarmes .al-txt small { display:block; font-size:12px; color:var(--muted); }
+.alarmes .al-tocou { color:#d1453b; font-weight:700; }
+.alarmes .al-bt { display:flex; gap:6px; }
+.alarmes .al-bt button { height:32px; padding:0 10px; font-size:12px; border-radius:8px; background:transparent; color:var(--muted); border:1px solid var(--border); font-weight:600; }
+.aviso-topo { position:fixed; top:16px; left:50%; transform:translateX(-50%); z-index:60; background:#d1453b; color:#fff; padding:12px 18px; border-radius:12px; font-weight:700; font-size:15px; box-shadow:0 8px 24px rgba(0,0,0,.3); display:flex; gap:12px; align-items:center; max-width:calc(100% - 32px); }
+.aviso-topo button { height:32px; padding:0 10px; font-size:13px; background:#fff; color:#d1453b; border-radius:8px; }
 footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; padding-top:12px; border-top:1px solid var(--border); font-size:13px; color:var(--muted); }
 @media (max-width:600px){ h1{font-size:30px} .cards{grid-template-columns:1fr} }
 </style>
@@ -144,8 +166,8 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
 </nav>
 
 <section class="ind" aria-label="Indicadores econômicos">
-  <div class="tile clicavel" data-serie="dolar" role="button" tabindex="0" aria-label="Ver gráfico de Dólar"><span>Dólar</span><strong id="usd">—</strong><small id="usdv">carregando…</small><small class="fut" id="usdf"></small></div>
-  <div class="tile clicavel" data-serie="euro" role="button" tabindex="0" aria-label="Ver gráfico de Euro"><span>Euro</span><strong id="eur">—</strong><small id="eurv">carregando…</small><small class="fut" id="eurf"></small></div>
+  <div class="tile clicavel" data-serie="moeda" role="button" tabindex="0" aria-label="Ver gráfico da moeda"><span id="moNome">Dólar</span><strong id="usd">—</strong><small id="usdv">carregando…</small><small class="fut" id="usdf"></small><small class="fut" id="moDica">Toque para trocar: Dólar · Euro · Libra · Iene</small></div>
+  <div class="tile clicavel" data-serie="indice" role="button" tabindex="0" aria-label="Ver gráfico do índice"><span id="indNome">Ibovespa</span><strong id="indValor">—</strong><small id="indVar">carregando…</small><small class="fut">Toque para trocar: Ibovespa · S&amp;P 500 · Nasdaq · Cripto</small></div>
   <div class="tile clicavel" data-serie="selic" role="button" tabindex="0" aria-label="Ver gráfico de Selic (meta)"><span>Selic (meta)</span><strong id="selic">—</strong><small>ao ano · Banco Central</small><small class="fut" id="selicf"></small></div>
   <div class="tile clicavel" data-serie="ipca" role="button" tabindex="0" aria-label="Ver gráfico de IPCA 12 meses"><span>IPCA 12 meses</span><strong id="ipca">—</strong><small id="ipcad">Banco Central</small><small class="fut" id="ipca15"></small></div>
   <div class="tile"><span>Bandeira tarifária</span><strong id="band"><span class="bdot" id="bdot"></span><span id="bnome">—</span></strong><small id="bref">carregando…</small><small class="fut"><a href="https://www.gov.br/aneel/pt-br/assuntos/tarifas/bandeiras-tarifarias">Ver na ANEEL</a></small></div>
@@ -193,6 +215,12 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     <p class="dica" id="acNota">Cotações da B3 com cerca de 15 min de atraso · clique numa ação para ver empresa, valor de mercado e gráfico</p>
   </article>
 
+  <article>
+    <div class="head"><h2>Alarmes</h2><span class="tag"><span class="dot" style="background:#E08F5A"></span>e-mail + navegador</span></div>
+    <ul class="lista alarmes" id="l-alarmes"><li class="carregando">Carregando…</li></ul>
+    <p class="dica">Para criar: clique no card da moeda ou numa ação e use “Me avise quando…”. O vigia confere a cada 15 min e manda e-mail.</p>
+  </article>
+
 </section>
 
 
@@ -205,6 +233,24 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
         <button type="button" class="fechar" id="gfechar">Fechar ✕</button>
       </div>
     </div>
+    <div class="seletor" id="gselMo" hidden>
+      <div class="opcoes" role="radiogroup" aria-label="Escolha a moeda">
+        <button type="button" role="radio" data-mo="USD">Dólar</button><button type="button" role="radio" data-mo="EUR">Euro</button><button type="button" role="radio" data-mo="GBP">Libra</button><button type="button" role="radio" data-mo="JPY">Iene</button>
+      </div>
+    </div>
+    <div class="seletor" id="gsel" hidden>
+      <div class="opcoes" role="radiogroup" aria-label="Escolha o índice">
+        <button type="button" role="radio" data-ind="ibov">Ibovespa</button><button type="button" role="radio" data-ind="sp500">S&amp;P 500</button><button type="button" role="radio" data-ind="nasdaq">Nasdaq</button><button type="button" role="radio" data-ind="cripto">Bitcoin</button>
+      </div>
+      <label class="cripto" id="gcriptoBox" hidden>Criptomoeda <select id="gcripto"><option value="bitcoin">Bitcoin (BTC)</option></select></label>
+    </div>
+    <form class="galarme" id="galarme" hidden>
+      <span>🔔 Me avise quando <b id="galAtivo">—</b> estiver</span>
+      <select id="galCond" aria-label="Condição"><option value="acima">acima de</option><option value="abaixo">abaixo de</option></select>
+      <label class="galvalor">R$ <input id="galValor" inputmode="decimal" autocomplete="off" aria-label="Valor do alarme" placeholder="0,00"></label>
+      <button type="submit">Criar alarme</button>
+      <span class="galmsg" id="galMsg"></span>
+    </form>
     <div class="leitura" id="gleitura">&nbsp;</div>
     <svg id="gsvg" viewBox="0 0 800 300" preserveAspectRatio="none" role="img" aria-label="Gráfico"></svg>
     <div class="fonte" id="gfonte"></div>
@@ -265,15 +311,24 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
   }
 
   // ---------- Câmbio (AwesomeAPI, grátis) ----------
+  var MOEDAS = {
+    USD: { nome: 'Dólar', sgs: 1, casas: 2 },
+    EUR: { nome: 'Euro', sgs: 21619, casas: 2 },
+    GBP: { nome: 'Libra', sgs: 21623, casas: 2 },
+    JPY: { nome: 'Iene', sgs: 21621, casas: 4 }
+  };
+  function moedaAtual() { var m = 'USD'; try { m = localStorage.getItem('sd-moeda') || 'USD'; } catch (e) {} return MOEDAS[m] ? m : 'USD'; }
   function cambio() {
-    pega('https://economia.awesomeapi.com.br/json/last/USD-BRL,EUR-BRL')
+    var m = moedaAtual(), M = MOEDAS[m];
+    set('moNome', M.nome);
+    var fut = document.getElementById('usdf'); if (fut) fut.style.display = m === 'USD' ? '' : 'none';
+    pega('https://economia.awesomeapi.com.br/json/last/' + m + '-BRL')
       .then(function (j) {
-        set('usd', 'R$ ' + br(j.USDBRL.bid, 2));
-        set('usdv', (Number(j.USDBRL.pctChange) >= 0 ? '▲ ' : '▼ ') + br(Math.abs(j.USDBRL.pctChange), 2) + '% hoje');
-        set('eur', 'R$ ' + br(j.EURBRL.bid, 2));
-        set('eurv', (Number(j.EURBRL.pctChange) >= 0 ? '▲ ' : '▼ ') + br(Math.abs(j.EURBRL.pctChange), 2) + '% hoje');
+        var q = j[m + 'BRL'];
+        set('usd', 'R$ ' + br(q.bid, M.casas));
+        set('usdv', (Number(q.pctChange) >= 0 ? '▲ ' : '▼ ') + br(Math.abs(q.pctChange), 2) + '% hoje');
       })
-      .catch(function () { set('usdv', 'indisponível agora'); set('eurv', 'indisponível agora'); });
+      .catch(function () { set('usd', '—'); set('usdv', 'indisponível agora'); });
   }
 
   // ---------- Selic e IPCA (Banco Central, grátis) ----------
@@ -390,7 +445,6 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     function seta(v) { return v == null ? '' : (Number(v) >= 0 ? ' ▲ ' : ' ▼ ') + br(Math.abs(v), 2) + '%'; }
     function nota(q) { return q.base === 'agora' ? '' : q.base === 'ofertas' ? ' (ofertas)' : ' (ajuste de ontem)'; }
     futuroB3('DOL', true).then(function (q) { if (q) set('usdf', 'Futuro ' + q.codigo + ': R$ ' + br(q.valor, 4) + seta(q.variacao) + nota(q)); }).catch(function () {});
-    futuroB3('EUR', true).then(function (q) { if (q) set('eurf', 'Futuro ' + q.codigo + ': R$ ' + br(q.valor, 4) + seta(q.variacao) + nota(q)); }).catch(function () {});
     var anoDI = String(new Date().getFullYear() + 1).slice(2);
     futuroB3('DI1', false, 'DI1F' + anoDI).then(function (q) { if (q) set('selicf', 'DI futuro ' + q.codigo + ': ' + br(q.valor, 2) + '%' + seta(q.variacao) + nota(q)); }).catch(function () {});
   }
@@ -411,14 +465,15 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
   }
   function abreAcao(cod) {
     gAtual = 'acao:' + cod; gConf = { nome: cod, fmt: function (v) { return 'R$ ' + br(v, 2); }, acao: cod };
-    document.getElementById('gfundo').hidden = false; document.getElementById('gtitulo').textContent = cod;
+    document.getElementById('gfundo').hidden = false; document.getElementById('gtitulo').textContent = cod; alMostraForm({ tipo: 'acao', ativo: cod });
     if (gMeses > 60) gMeses = 12;
     carregaGrafico(); document.getElementById('gfechar').focus();
   }
   function bilhoes(v) { if (v == null) return '—'; return v >= 1e12 ? 'R$ ' + br(v / 1e12, 2) + ' tri' : v >= 1e9 ? 'R$ ' + br(v / 1e9, 1) + ' bi' : 'R$ ' + br(v / 1e6, 0) + ' mi'; }
-  function fechaGrafico() { document.getElementById('gfundo').hidden = true; gAtual = null; }
+  function fechaGrafico() { alMostraForm(null); document.getElementById('gfundo').hidden = true; document.getElementById('gsel').hidden = true; document.getElementById('gselMo').hidden = true; gAtual = null; }
   function carregaGrafico() {
     if (gConf && gConf.acao) return carregaAcao();
+    if (gConf && gConf.indice) return carregaIndice();
     var S = gConf, ini = new Date(); ini.setMonth(ini.getMonth() - gMeses);
     document.getElementById('gresumo').textContent = 'Carregando…'; document.getElementById('gsvg').innerHTML = ''; document.getElementById('gleitura').innerHTML = '&nbsp;';
     document.getElementById('gfonte').textContent = 'Fonte: Banco Central (série ' + S.sgs + ').';
@@ -475,8 +530,9 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     svg.onmouseleave = function () { document.getElementById('gcur').setAttribute('visibility', 'hidden'); document.getElementById('gpt').setAttribute('visibility', 'hidden'); document.getElementById('gleitura').innerHTML = '&nbsp;'; };
   }
   document.querySelectorAll('.tile.clicavel').forEach(function (el) {
-    el.addEventListener('click', function (e) { if (e.target.closest('a')) return; abreGrafico(el.dataset.serie); });
-    el.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abreGrafico(el.dataset.serie); } });
+    function abre() { if (el.dataset.serie === 'indice') abreIndice(); else if (el.dataset.serie === 'moeda') abreMoeda(); else abreGrafico(el.dataset.serie); }
+    el.addEventListener('click', function (e) { if (e.target.closest('a')) return; abre(); });
+    el.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abre(); } });
   });
   document.getElementById('gper').addEventListener('click', function (e) {
     var b = e.target.closest('button[data-m]'); if (!b) return;
@@ -543,8 +599,173 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     document.getElementById('acForm').hidden = true; acDesenha();
   });
 
+  // ---------- Card de mercado: Ibovespa / S&P 500 / Nasdaq / Cripto ----------
+  var IND = {
+    ibov: { nome: 'Ibovespa', s: '^BVSP', pts: true },
+    sp500: { nome: 'S&P 500', s: '^GSPC', pts: true },
+    nasdaq: { nome: 'Nasdaq', s: '^IXIC', pts: true },
+    cripto: { nome: 'Bitcoin', cripto: true }
+  };
+  var CG = 'https://api.coingecko.com/api/v3/';
+  var ESTAVEIS = /^(tether|usd-coin|dai|first-digital-usd|ethena-usde|usds|paypal-usd|true-usd|binance-usd|frax|tether-gold|staked-ether|wrapped-bitcoin|wrapped-steth|weth|wrapped-eeth)$/;
+  function indEstado() {
+    var e = { tipo: 'ibov', cripto: 'bitcoin', criptoNome: 'Bitcoin' };
+    try { var v = JSON.parse(localStorage.getItem('sd-indice') || 'null'); if (v && IND[v.tipo]) e = v; } catch (x) {}
+    return e;
+  }
+  function indSalva(e) { try { localStorage.setItem('sd-indice', JSON.stringify(e)); } catch (x) {} }
+  function pontos(v) { return br(v, 0) + ' pts'; }
+  function reais(v) { return 'R$ ' + br(v, v >= 100 ? 2 : v >= 1 ? 4 : 6); }
+  function indCard() {
+    var e = indEstado(), d = IND[e.tipo];
+    set('indNome', d.cripto ? e.criptoNome : d.nome);
+    var p = d.cripto
+      ? pega(CG + 'simple/price?ids=' + encodeURIComponent(e.cripto) + '&vs_currencies=brl&include_24hr_change=true').then(function (j) {
+          var c = j[e.cripto]; if (!c) throw 0; return { preco: c.brl, variacao: c.brl_24h_change, cripto: true }; })
+      : pega('/api/indice?s=' + encodeURIComponent(d.s) + '&range=5d');
+    p.then(function (q) {
+      if (!q || q.preco == null) throw 0;
+      set('indValor', d.cripto ? reais(q.preco) : pontos(q.preco));
+      set('indVar', q.variacao == null ? '' : (q.variacao >= 0 ? '▲ ' : '▼ ') + br(Math.abs(q.variacao), 2) + '% ' + (d.cripto ? 'em 24h' : 'hoje'));
+    }).catch(function () { set('indValor', '—'); set('indVar', 'indisponível agora'); });
+  }
+  function indMarcaBotoes() {
+    var e = indEstado();
+    document.querySelectorAll('#gsel [data-ind]').forEach(function (b) {
+      b.setAttribute('aria-checked', b.dataset.ind === e.tipo ? 'true' : 'false');
+      if (b.dataset.ind === 'cripto') b.textContent = e.tipo === 'cripto' ? e.criptoNome : 'Bitcoin';
+    });
+    document.getElementById('gcriptoBox').hidden = e.tipo !== 'cripto';
+  }
+  var criptoLista = null;
+  function carregaCriptos() {
+    if (criptoLista) return Promise.resolve(criptoLista);
+    return pega(CG + 'coins/markets?vs_currency=brl&order=market_cap_desc&per_page=30&page=1').then(function (l) {
+      criptoLista = (l || []).filter(function (c) { return !ESTAVEIS.test(c.id); }).slice(0, 15);
+      var sel = document.getElementById('gcripto'), e = indEstado();
+      sel.innerHTML = criptoLista.map(function (c) { return '<option value="' + esc(c.id) + '">' + esc(c.name) + ' (' + esc(String(c.symbol).toUpperCase()) + ')</option>'; }).join('');
+      sel.value = e.cripto;
+      return criptoLista;
+    });
+  }
+  function abreIndice() {
+    gAtual = 'indice'; gConf = { indice: true, fmt: function (v) { return v; } };
+    document.getElementById('gfundo').hidden = false; document.getElementById('gsel').hidden = false;
+    indMarcaBotoes(); carregaCriptos().catch(function () {});
+    carregaGrafico(); document.getElementById('gfechar').focus();
+  }
+  function carregaIndice() {
+    var e = indEstado(), d = IND[e.tipo];
+    var range = gMeses <= 1 ? '1mo' : gMeses <= 3 ? '3mo' : gMeses <= 12 ? '1y' : '5y', dias = gMeses <= 1 ? 30 : gMeses <= 3 ? 90 : gMeses <= 12 ? 365 : 1825;
+    document.getElementById('gtitulo').textContent = d.cripto ? e.criptoNome : d.nome;
+    document.getElementById('gresumo').textContent = 'Carregando…'; document.getElementById('gsvg').innerHTML = ''; document.getElementById('gleitura').innerHTML = '&nbsp;';
+    gConf.fmt = d.cripto ? reais : pontos; gConf.extra = '';
+    var p;
+    if (d.cripto) {
+      document.getElementById('gfonte').textContent = 'Fonte: CoinGecko · preços em reais.';
+      p = pega(CG + 'coins/' + encodeURIComponent(e.cripto) + '/market_chart?vs_currency=brl&days=' + dias).then(function (j) {
+        var mc = (j.market_caps || []).slice(-1)[0];
+        gConf.extra = mc ? 'Valor de mercado: ' + bilhoes(mc[1]) : '';
+        return (j.prices || []).map(function (x) { var t = new Date(x[0]); return { t: t, v: x[1], d: dd(t) }; });
+      });
+    } else {
+      p = pega('/api/indice?s=' + encodeURIComponent(d.s) + '&range=' + range).then(function (a) {
+        if (!a || a.erro) throw a && a.erro;
+        document.getElementById('gfonte').textContent = 'Fonte: ' + (a.fonte || 'Yahoo Finance') + '.';
+        return (a.historico || []).map(function (x) { var t = new Date(x.t * 1000); return { t: t, v: Number(x.v), d: dd(t) }; });
+      });
+    }
+    p.then(function (dados) { gDados = dados; desenha(); })
+     .catch(function () { document.getElementById('gresumo').textContent = 'Não carregou agora. Tente de novo em alguns minutos.'; });
+  }
+  document.getElementById('gsel').addEventListener('click', function (ev) {
+    var b = ev.target.closest('[data-ind]'); if (!b) return;
+    var e = indEstado(); e.tipo = b.dataset.ind; indSalva(e); indMarcaBotoes(); carregaGrafico(); indCard();
+  });
+  document.getElementById('gcripto').addEventListener('change', function (ev) {
+    var e = indEstado(), sel = ev.target; e.tipo = 'cripto'; e.cripto = sel.value;
+    e.criptoNome = (sel.options[sel.selectedIndex].text || '').replace(/\s*\(.*\)$/, '');
+    indSalva(e); indMarcaBotoes(); carregaGrafico(); indCard();
+  });
+
+  // ---------- Card de moedas: Dólar / Euro / Libra / Iene ----------
+  function moConf() { var m = moedaAtual(), M = MOEDAS[m]; return { nome: M.nome + ' (PTAX venda)', sgs: M.sgs, fmt: function (v) { return 'R$ ' + br(v, M.casas === 2 ? 4 : 5); } }; }
+  function moMarca() { var m = moedaAtual(); document.querySelectorAll('#gselMo [data-mo]').forEach(function (b) { b.setAttribute('aria-checked', b.dataset.mo === m ? 'true' : 'false'); }); }
+  function abreMoeda() {
+    gAtual = 'moeda'; gConf = moConf();
+    document.getElementById('gfundo').hidden = false; document.getElementById('gselMo').hidden = false;
+    document.getElementById('gtitulo').textContent = gConf.nome; moMarca(); alMostraForm({ tipo: 'moeda', ativo: moedaAtual() });
+    carregaGrafico(); document.getElementById('gfechar').focus();
+  }
+  document.getElementById('gselMo').addEventListener('click', function (ev) {
+    var b = ev.target.closest('[data-mo]'); if (!b) return;
+    try { localStorage.setItem('sd-moeda', b.dataset.mo); } catch (e) {}
+    gConf = moConf(); document.getElementById('gtitulo').textContent = gConf.nome; moMarca(); alMostraForm({ tipo: 'moeda', ativo: moedaAtual() }); carregaGrafico(); cambio();
+  });
+
+  // ---------- Alarmes de cotação ----------
+  var NOME_MO = { USD: 'Dólar', EUR: 'Euro', GBP: 'Libra', JPY: 'Iene' };
+  var galContexto = null;  // { tipo: 'moeda'|'acao', ativo: 'USD'|'VALE3' }
+  function alNome(a) { return a.tipo === 'moeda' ? NOME_MO[a.ativo] || a.ativo : a.ativo; }
+  function alUrl() { return '/api/alertas' + (chave ? '?k=' + encodeURIComponent(chave) : ''); }
+  function alPost(corpo) {
+    return fetch(alUrl(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corpo) })
+      .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw j.erro || 'erro'; return j; }); });
+  }
+  function alMostraForm(ctx) {
+    galContexto = ctx; var f = document.getElementById('galarme');
+    if (!ctx) { f.hidden = true; return; }
+    f.hidden = false; set('galAtivo', ctx.tipo === 'moeda' ? NOME_MO[ctx.ativo] : ctx.ativo); set('galMsg', '');
+    document.getElementById('galValor').value = '';
+  }
+  function alVistos() { try { return JSON.parse(localStorage.getItem('sd-alarmes-vistos') || '[]'); } catch (e) { return []; } }
+  function alAvisa(a) {
+    var txt = '🔔 ' + alNome(a) + ' ' + (a.condicao === 'acima' ? 'chegou a' : 'caiu para') + ' R$ ' + br(a.precoDisparo, a.ativo === 'JPY' ? 4 : 2);
+    try { if (window.Notification && Notification.permission === 'granted') new Notification('SmartDisplay', { body: txt }); } catch (e) {}
+    var d = document.createElement('div'); d.className = 'aviso-topo'; d.setAttribute('role', 'alert');
+    d.innerHTML = '<span>' + esc(txt) + '</span><button type="button">OK</button>';
+    d.querySelector('button').onclick = function () { d.remove(); };
+    document.body.appendChild(d);
+  }
+  function alDesenha(lista) {
+    var el = document.getElementById('l-alarmes');
+    if (!lista.length) { el.innerHTML = '<li class="aviso">Nenhum alarme ainda.</li>'; return; }
+    lista = lista.slice().sort(function (a, b) { return (a.disparadoEm ? 1 : 0) - (b.disparadoEm ? 1 : 0); });
+    el.innerHTML = lista.map(function (a) {
+      var casas = a.ativo === 'JPY' ? 4 : 2;
+      var linha = esc(alNome(a)) + ' ' + (a.condicao === 'acima' ? '≥' : '≤') + ' R$ ' + br(a.valor, casas);
+      var sub = a.disparadoEm ? '<small class="al-tocou">Tocou em ' + new Date(a.disparadoEm).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + ' · R$ ' + br(a.precoDisparo, casas) + '</small>' : '<small>ativo</small>';
+      return '<li><span class="al-txt">' + linha + sub + '</span><span class="al-bt">' + (a.disparadoEm ? '<button type="button" data-rel="' + esc(a.id) + '">Religar</button>' : '') + '<button type="button" data-del="' + esc(a.id) + '" aria-label="Apagar alarme">Apagar</button></span></li>';
+    }).join('');
+  }
+  function alCarregar() {
+    if (!chave) { document.getElementById('l-alarmes').innerHTML = '<li class="aviso">Abra o SmartDisplay pelo seu link pessoal para usar os alarmes.</li>'; return; }
+    pega(alUrl()).then(function (j) {
+      if (!j || j.erro) throw j && j.erro;
+      var lista = j.alertas || [], vistos = alVistos(), novos = false;
+      lista.forEach(function (a) { if (a.disparadoEm && vistos.indexOf(a.id + a.disparadoEm) < 0) { alAvisa(a); vistos.push(a.id + a.disparadoEm); novos = true; } });
+      if (novos) { try { localStorage.setItem('sd-alarmes-vistos', JSON.stringify(vistos.slice(-100))); } catch (e) {} }
+      alDesenha(lista);
+    }).catch(function (e) { document.getElementById('l-alarmes').innerHTML = '<li class="aviso">' + esc(typeof e === 'string' ? e : 'Alarmes indisponíveis agora.') + '</li>'; });
+  }
+  document.getElementById('galarme').addEventListener('submit', function (ev) {
+    ev.preventDefault(); if (!galContexto) return;
+    var v = Number(String(document.getElementById('galValor').value).replace(/\./g, '').replace(',', '.'));
+    if (!(v > 0)) { set('galMsg', 'Digite um valor, por exemplo 5,60.'); return; }
+    try { if (window.Notification && Notification.permission === 'default') Notification.requestPermission(); } catch (e) {}
+    set('galMsg', 'Criando…');
+    alPost({ acao: 'criar', tipo: galContexto.tipo, ativo: galContexto.ativo, condicao: document.getElementById('galCond').value, valor: v })
+      .then(function (j) { set('galMsg', '✔ Alarme criado. Aparece no card "Alarmes".'); document.getElementById('galValor').value = ''; alDesenha(j.alertas || []); })
+      .catch(function (e) { set('galMsg', typeof e === 'string' ? e : 'Não deu para criar agora.'); });
+  });
+  document.getElementById('l-alarmes').addEventListener('click', function (ev) {
+    var del = ev.target.closest('[data-del]'), rel = ev.target.closest('[data-rel]');
+    if (del) alPost({ acao: 'apagar', id: del.dataset.del }).then(function (j) { alDesenha(j.alertas || []); }).catch(function () {});
+    if (rel) alPost({ acao: 'religar', id: rel.dataset.rel }).then(function (j) { alDesenha(j.alertas || []); }).catch(function () {});
+  });
+
   function atualiza() {
-    clima(); cambio(); bc(); meusSites(); acDesenha();
+    clima(); cambio(); bc(); meusSites(); acDesenha(); indCard(); alCarregar();
     set('atualizado', 'Atualizado às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
   }
   atualiza();
