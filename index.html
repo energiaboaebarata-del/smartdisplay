@@ -266,6 +266,8 @@ h2 { margin:0; font-family:Manrope, sans-serif; font-size:20px; font-weight:700;
 .proj small { font-size:12px; color:var(--muted); }
 .proj .cont { align-self:flex-start; margin-top:6px; min-width:34px; height:24px; padding:0 8px; border-radius:999px; background:var(--btn); color:var(--btnText); font-size:12px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; }
 .proj.off { opacity:.55; pointer-events:none; }
+.jk-alimentar { display:inline-flex; align-items:center; height:44px; padding:0 16px; border-radius:12px; background:var(--btn); color:var(--btnText); font-weight:700; font-size:14px; text-decoration:none; }
+.jk-alimentar:hover { text-decoration:none; filter:brightness(1.05); }
 .nota-fluxo { margin:2px 0 0; font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .lista-links { display:flex; flex-direction:column; gap:8px; }
 .lista-links a { display:flex; align-items:center; min-height:44px; padding:0 14px; border-radius:12px; border:1px solid var(--border); color:var(--text); font-weight:600; font-size:14px; }
@@ -1180,7 +1182,7 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
       '<div><span class="fonte">Média por dia da semana (últimos 28 dias)</span><div class="jk-semana">' +
         d.porDiaSemana.map(function (v, i) { return '<div>' + dias[i] + '<b>' + (v == null ? '—' : g(v)) + '</b></div>'; }).join('') + '</div></div>' +
       '<div class="jk-acoes">' +
-        '<button type="button" id="jkAlimentar" title="Precisa ligar a Tuya">🍖 Alimentar o Joka agora</button>' +
+        '<a class="jk-alimentar" id="jkAlimentar" href="http://localhost:8080/smart-spin/0" target="_blank" rel="noopener" title="Abre o painel Smart Spin (Home Assistant), onde fica o botão de servir">🍖 Alimentar o Joka agora</a>' +
         '<button type="button" class="sec" data-jk="extra">+1 dose extra (já soltei)</button>' +
         '<button type="button" class="sec" data-jk="tanque">Enchi o alimentador</button>' +
         '<button type="button" class="sec" data-jk="pacote">Abri pacote novo</button>' +
@@ -1208,7 +1210,6 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
   document.getElementById('gjoka').addEventListener('click', function (ev) {
     var b = ev.target.closest('[data-jk]');
     if (b) { b.disabled = true; jkAcao(b.dataset.jk).catch(function () {}).then(function () { b.disabled = false; }); }
-    if (ev.target.closest('#jkAlimentar')) { ev.target.closest('#jkAlimentar').textContent = 'Em breve: precisa ligar a Tuya'; }
   });
 
   // ---------- Painéis Smart Spin e Network ----------
