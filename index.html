@@ -268,6 +268,17 @@ h2 { margin:0; font-family:Manrope, sans-serif; font-size:20px; font-weight:700;
 .proj.off { opacity:.55; pointer-events:none; }
 .jk-alimentar { display:inline-flex; align-items:center; height:44px; padding:0 16px; border-radius:12px; background:var(--btn); color:var(--btnText); font-weight:700; font-size:14px; text-decoration:none; }
 .jk-alimentar:hover { text-decoration:none; filter:brightness(1.05); }
+.pst-nav { display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:13px; color:var(--muted); }
+.pst-nav button { height:34px; padding:0 12px; font-size:13px; }
+.pst-nav button[disabled] { opacity:.4; cursor:default; }
+.pst-topo { display:flex; align-items:center; gap:10px; font-size:17px; }
+.pst-meta { font-size:13px; color:var(--muted); }
+.pst-artes { display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; }
+.pst-artes img, .pst-artes video { height:220px; max-width:100%; border-radius:10px; border:1px solid var(--border); object-fit:contain; background:#000; }
+.pst-arq { align-self:center; padding:10px 14px; border:1px solid var(--border); border-radius:10px; color:var(--text); white-space:nowrap; }
+.pst-rot { display:flex; align-items:center; justify-content:space-between; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+.pst-rot button { height:30px; padding:0 12px; font-size:12px; letter-spacing:0; text-transform:none; }
+.pst-texto { white-space:pre-wrap; font-size:14px; line-height:1.5; padding:12px 14px; border:1px solid var(--border); border-radius:12px; max-height:240px; overflow:auto; }
 .nota-fluxo { margin:2px 0 0; font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .lista-links { display:flex; flex-direction:column; gap:8px; }
 .lista-links a { display:flex; align-items:center; min-height:44px; padding:0 14px; border-radius:12px; border:1px solid var(--border); color:var(--text); font-weight:600; font-size:14px; }
@@ -1379,6 +1390,83 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
   ctT.addEventListener('click', abreContas);
   ctT.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abreContas(); } });
 
+
+  // ---------- Post do dia (módulo Marketing da plataforma S2BT) ----------
+  var POST = null, postIdx = 0;
+  var REDE_TXT = { instagram: 'Instagram', linkedin: 'LinkedIn', google: 'Google', tiktok: 'TikTok', youtube: 'YouTube' };
+  var ST_POST = { postado: ['verde', 'Postado'], programado: ['laranja', 'Agendado'], a_revisar: ['vermelho', 'A revisar'], a_programar: ['vermelho', 'A postar'],
+    a_produzir: ['vermelho', 'A produzir'], em_aberto: ['vermelho', 'Em aberto'] };
+  function postUrl(extra) { return '/api/post' + (chave ? '?k=' + encodeURIComponent(chave) : '') + (extra || ''); }
+  function postLed() {
+    var luz = document.getElementById('luzPost');
+    if (!POST || POST.erro) { luz.className = 'luz'; set('txtPost', POST && POST.erro ? POST.erro : 'indisponível agora'); return; }
+    var hoje = POST.hoje, deHoje = POST.itens.filter(function (i) { return i.data === hoje; });
+    if (deHoje.length) {
+      var falta = deHoje.filter(function (i) { return i.status !== 'postado' && i.status !== 'programado'; });
+      var agend = deHoje.filter(function (i) { return i.status === 'programado'; });
+      var feitos = deHoje.length - falta.length - agend.length;
+      if (falta.length) { luz.className = 'luz vermelho'; set('txtPost', falta.length + ' a postar hoje' + (feitos ? ' · ' + feitos + ' postado' + (feitos > 1 ? 's' : '') : '')); }
+      else if (agend.length) { luz.className = 'luz amarelo'; set('txtPost', agend.length + ' agendado' + (agend.length > 1 ? 's' : '') + ' para hoje · ainda não enviado' + (agend.length > 1 ? 's' : '')); }
+      else { luz.className = 'luz verde'; set('txtPost', deHoje.length > 1 ? 'os ' + deHoje.length + ' posts de hoje foram postados' : 'postado hoje'); }
+      return;
+    }
+    var prox = POST.itens.filter(function (i) { return i.data > hoje && i.status !== 'postado'; })[0];
+    if (prox && prox.status === 'programado') { luz.className = 'luz laranja'; set('txtPost', 'nada hoje · próximo agendado ' + prox.data.slice(8, 10) + '/' + prox.data.slice(5, 7)); }
+    else if (prox) { luz.className = 'luz'; set('txtPost', 'nada hoje · próximo ' + prox.data.slice(8, 10) + '/' + prox.data.slice(5, 7) + ' (' + (ST_POST[prox.status] || ['', prox.status])[1].toLowerCase() + ')'); }
+    else { luz.className = 'luz'; set('txtPost', 'nenhum post programado'); }
+  }
+  function postCarregar() {
+    if (!chave) { POST = { erro: 'abra pelo link pessoal' }; postLed(); return; }
+    fetch(postUrl(), { cache: 'no-store' }).then(function (r) { return r.json().catch(function () { return { erro: 'erro ' + r.status }; }); })
+      .then(function (d) { POST = d; postLed(); }).catch(function () { POST = { erro: 'indisponível agora' }; postLed(); });
+  }
+  function postDesenha() {
+    var corpo = document.getElementById('popCorpo');
+    if (!POST || POST.erro) { set('popTitulo', 'Post do dia'); corpo.innerHTML = '<p class="ct-erro">' + esc(POST && POST.erro || 'Não carregou agora.') + '</p>'; return; }
+    var its = POST.itens;
+    if (!its.length) { set('popTitulo', 'Post do dia'); corpo.innerHTML = '<p class="fonte">Nenhum post entre os últimos 7 dias e os próximos 14.</p><a class="more" href="https://www.s2bt.com.br/marketing" target="_blank" rel="noopener">Abrir o Marketing →</a>'; return; }
+    var p = its[postIdx], st = ST_POST[p.status] || ['', p.status];
+    if (p.status === 'programado' && p.data === POST.hoje) st = ['amarelo', 'Agendado para hoje · não enviado'];
+    var dd = p.data.slice(8, 10) + '/' + p.data.slice(5, 7) + (p.data === POST.hoje ? ' (hoje)' : '');
+    set('popTitulo', 'Post do dia');
+    var h = '<div class="pst-nav"><button type="button" class="editar" data-post-nav="-1"' + (postIdx ? '' : ' disabled') + '>← Anterior</button>' +
+      '<span>' + (postIdx + 1) + ' de ' + its.length + '</span><button type="button" class="editar" data-post-nav="1"' + (postIdx < its.length - 1 ? '' : ' disabled') + '>Próximo →</button></div>';
+    h += '<div class="pst-topo"><span class="luz ' + st[0] + '"></span><b>' + esc(p.titulo) + '</b></div>';
+    h += '<div class="pst-meta">' + dd + (p.hora ? ' · ' + esc(p.hora) : '') + ' · ' + esc(REDE_TXT[p.rede] || p.rede) + (p.perfil ? ' (' + esc(p.perfil) + ')' : '') +
+      (p.formato ? ' · ' + esc(p.formato) : '') + ' · <b>' + esc(st[1]) + '</b></div>';
+    if (p.arquivos && p.arquivos.length) {
+      h += '<div class="pst-artes">' + p.arquivos.map(function (a) {
+        var src = postUrl('&arquivo=' + a.id);
+        if (a.tipo === 'imagem') return '<a href="' + src + '" target="_blank" rel="noopener"><img src="' + src + '" alt="' + esc(a.nome) + '" loading="lazy"></a>';
+        if (a.tipo === 'video') return '<video src="' + src + '" controls preload="metadata"></video>';
+        return '<a class="pst-arq" href="' + src + '" target="_blank" rel="noopener">📎 ' + esc(a.nome) + '</a>';
+      }).join('') + '</div>';
+    }
+    if (p.texto) h += '<div class="pst-rot">Texto / legenda <button type="button" class="editar" data-post-copiar="1">Copiar</button></div><div class="pst-texto" id="pstTexto">' + esc(p.texto) + '</div>';
+    if (p.obs) h += '<div class="pst-rot">Observações</div><p class="fonte">' + esc(p.obs) + '</p>';
+    h += '<div class="lista-links">';
+    if (p.link) h += '<a href="' + esc(p.link) + '" target="_blank" rel="noopener">🔗 ' + esc(p.link_nome || 'Link do post') + '<small>' + esc(p.link.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]) + '</small></a>';
+    h += '<a href="https://www.s2bt.com.br/marketing" target="_blank" rel="noopener">✏️ Abrir no Marketing<small>marcar como postado, editar</small></a></div>';
+    corpo.innerHTML = h;
+  }
+  function abrePost() {
+    ctAberto = false;
+    if (POST && POST.itens && POST.itens.length) {
+      var hoje = POST.hoje, i = POST.itens.findIndex(function (x) { return x.data >= hoje; });
+      postIdx = i < 0 ? POST.itens.length - 1 : i;
+    }
+    postDesenha();
+    document.getElementById('popFundo').hidden = false; document.getElementById('popFechar').focus();
+  }
+  document.getElementById('ledPost').addEventListener('click', abrePost);
+  document.getElementById('popCorpo').addEventListener('click', function (e) {
+    var n = e.target.closest('[data-post-nav]'); if (n && POST && POST.itens) { postIdx = Math.max(0, Math.min(POST.itens.length - 1, postIdx + Number(n.dataset.postNav))); postDesenha(); return; }
+    if (e.target.closest('[data-post-copiar]')) {
+      var b = e.target.closest('[data-post-copiar]'), tx = document.getElementById('pstTexto').textContent;
+      try { navigator.clipboard.writeText(tx).then(function () { b.textContent = 'Copiado ✓'; }); } catch (er) {}
+    }
+  });
+
   function abrePop(qual) {
     ctAberto = false;
     var corpo = document.getElementById('popCorpo');
@@ -1410,7 +1498,7 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') fechaPop(); });
 
   function atualiza() {
-    clima(); cambio(); bc(); meusSites(); acDesenha(); indCard(); alCarregar(); jkCarregar(); ctCarregar();
+    clima(); cambio(); bc(); meusSites(); acDesenha(); indCard(); alCarregar(); jkCarregar(); ctCarregar(); postCarregar();
     set('atualizado', 'Atualizado às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
   }
   atualiza();
