@@ -4,7 +4,7 @@
 import { rssItens } from "../../lib/rss.js";
 
 const PODEROMETRO = "https://poderometro.com.br/data/votacoes.json";
-const INCLUI = "https://pcd.s2bt.com.br/";
+const INCLUI = "https://incluimais.s2bt.com.br/";
 const S2BT_UF = "https://www.s2bt.com.br/publico/vitrine/uf/";
 
 async function pegar(url, tipo) {
