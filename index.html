@@ -2,7 +2,15 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SmartDisplay">
+<meta name="theme-color" content="#17181A">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icone-180.png">
+<link rel="icon" href="/icone.svg" type="image/svg+xml">
 <title>SmartDisplay</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -306,6 +314,55 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
   .ind > :last-child:nth-child(odd) { grid-column:1 / -1; }
   article { padding:18px; border-radius:16px; }
 }
+
+/* ---------- Organizar cards ---------- */
+.org-barra { display:flex; justify-content:flex-end; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:-12px; }
+.org-bt { height:34px; font-size:13px; }
+.org-bt[aria-pressed="true"] { border-color:var(--accent); color:var(--text); background:color-mix(in srgb, var(--accent) 14%, transparent); }
+.org-dica { font-size:12px; color:var(--muted); margin-right:auto; }
+.cards.grade.livre { grid-template-areas:none !important; }
+.cards.grade.livre > article { grid-area:auto !important; }
+@media (min-width:700px) { .cards.grade.livre > article.largo { grid-column:span 2 !important; } }
+@media (min-width:1560px) { .cards.grade.livre > article.largo.a-trends { grid-column:span 4 !important; } }
+.org-ferr { display:none; position:absolute; top:8px; right:8px; z-index:5; gap:4px; }
+.organizando .org-ferr { display:flex; }
+.org-ferr button { height:34px; min-width:34px; padding:0 8px; border-radius:10px; font-size:15px; background:var(--surface); color:var(--text); border:1px solid var(--accent); }
+.org-ferr .pega { cursor:grab; touch-action:none; }
+.cards.grade > article { position:relative; }
+.organizando > article { outline:2px dashed color-mix(in srgb, var(--accent) 60%, transparent); outline-offset:3px; }
+.organizando > article > :not(.org-ferr) { pointer-events:none; user-select:none; }
+.organizando > article.arrastando { z-index:20; opacity:.92; box-shadow:0 18px 40px rgba(0,0,0,.35); cursor:grabbing; }
+.organizando > article.arrastando .org-ferr .pega { cursor:grabbing; }
+.chave-form { display:flex; align-items:center; gap:8px; }
+.chave-form[hidden] { display:none; }
+.chave-form input { height:36px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text); padding:0 10px; font:inherit; font-size:13px; width:180px; }
+.chave-form button { height:36px; padding:0 14px; font-size:13px; }
+
+/* ---------- Celular ---------- */
+@media (max-width:699px) {
+  .cards.grade:not(.livre) { grid-template-areas:"acoes" "agenda" "role" "oferta" "pcd" "energia" "flamengo" "alarmes" "trends"; }
+}
+@media (max-width:600px) {
+  .wrap { padding:calc(14px + env(safe-area-inset-top)) 14px calc(28px + env(safe-area-inset-bottom)); gap:16px; }
+  header { gap:14px; }
+  h1 { font-size:26px !important; }
+  .principais .pri { min-height:42px; font-size:14px; }
+  .faixa { gap:10px; }
+  .ind { gap:8px; }
+  .ind .tile { padding:11px 12px; gap:2px; border-radius:12px; }
+  .ind .tile strong { font-size:19px; }
+  .ind .tile > span, .ind .tile small { font-size:11px; }
+  .ind .tile .fut { font-size:11px; margin-top:2px; padding-top:4px; }
+  .tile.conta #contasValor { font-size:20px; }
+  .led { min-height:48px; padding:8px 10px; }
+  article { padding:16px !important; gap:12px !important; }
+  h2 { font-size:18px; }
+  .cards.grade .a-oferta .globo-box { min-height:220px; flex-basis:220px; }
+  .acoes li { padding:10px 0; }
+  .org-dica { flex-basis:100%; }
+  footer { flex-direction:column; align-items:stretch; }
+  .chave-form input { flex:1; width:auto; }
+}
 </style>
 </head>
 <body>
@@ -367,7 +424,12 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
   <div class="tile"><span>Bandeira tarifária</span><strong id="band"><span class="bdot" id="bdot"></span><span id="bnome">—</span></strong><small id="bref">carregando…</small><small class="fut"><a href="https://www.gov.br/aneel/pt-br/assuntos/tarifas/bandeiras-tarifarias">Ver na ANEEL</a></small></div>
 </section>
 
-<section class="cards grade" aria-label="Painel">
+<div class="org-barra" id="orgBarra">
+  <span class="org-dica" id="orgDica" hidden>Arraste pelo <b>⠿</b> (ou use as setas) · <b>↔</b> alarga ou estreita · a ordem fica guardada neste aparelho</span>
+  <button type="button" class="ghost org-bt" id="orgPadrao" hidden>Voltar ao padrão</button>
+  <button type="button" class="ghost org-bt" id="orgBotao" aria-pressed="false">✥ Organizar cards</button>
+</div>
+<section class="cards grade" id="grade" aria-label="Painel">
 
   <article class="a-agenda">
     <div class="head"><h2>Agenda do dia</h2><span class="tag"><span class="dot" style="background:#E08F5A"></span>Google Agenda · Prumo</span></div>
@@ -473,6 +535,7 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
 
 <footer>
   <span id="atualizado">Atualizando…</span>
+  <form id="chaveForm" class="chave-form" hidden><label for="chaveCampo">🔑 Sua chave</label><input id="chaveCampo" type="password" autocomplete="off" placeholder="cole a chave pessoal"><button type="submit">Entrar</button></form>
   <button class="ghost" id="tema" type="button">Tema: Automático</button>
 </footer>
 
@@ -1499,6 +1562,101 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
   document.getElementById('popFechar').addEventListener('click', fechaPop);
   document.getElementById('popFundo').addEventListener('click', function (e) { if (e.target.id === 'popFundo') fechaPop(); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') fechaPop(); });
+
+
+  // ---------- Organizar cards (ordem e largura guardadas neste aparelho; separadas para computador e celular) ----------
+  (function () {
+    var grade = document.getElementById('grade'), bt = document.getElementById('orgBotao'), padrao = document.getElementById('orgPadrao'), dica = document.getElementById('orgDica');
+    var cards = Array.prototype.slice.call(grade.children).filter(function (a) { return a.tagName === 'ARTICLE'; });
+    cards.forEach(function (a) {
+      var m = a.className.match(/\ba-([a-z]+)/); a.dataset.card = m ? m[1] : '';
+      var f = document.createElement('div'); f.className = 'org-ferr';
+      f.innerHTML = '<button type="button" class="pega" title="Arrastar" aria-label="Arrastar">⠿</button><button type="button" data-org="sobe" title="Mover para antes" aria-label="Mover para antes">↑</button>' +
+        '<button type="button" data-org="desce" title="Mover para depois" aria-label="Mover para depois">↓</button><button type="button" data-org="largo" title="Alargar ou estreitar" aria-label="Alargar ou estreitar">↔</button>';
+      a.insertBefore(f, a.firstChild);
+    });
+    var ordemOriginal = cards.slice();
+    var mq = window.matchMedia('(max-width:699px)');
+    function modo() { return mq.matches ? 'cel' : 'pc'; }
+    function ler() { try { return JSON.parse(localStorage.getItem('sd-layout-' + modo()) || 'null'); } catch (e) { return null; } }
+    function gravar(v) { try { if (v) localStorage.setItem('sd-layout-' + modo(), JSON.stringify(v)); else localStorage.removeItem('sd-layout-' + modo()); } catch (e) {} }
+    function estado() {
+      var lista = Array.prototype.slice.call(grade.querySelectorAll(':scope > article'));
+      return { ordem: lista.map(function (a) { return a.dataset.card; }), largos: lista.filter(function (a) { return a.classList.contains('largo'); }).map(function (a) { return a.dataset.card; }) };
+    }
+    function aplicar() {
+      var v = ler();
+      ordemOriginal.forEach(function (a) { grade.appendChild(a); a.classList.remove('largo'); });
+      grade.classList.toggle('livre', !!v);
+      padrao.hidden = !v && !grade.classList.contains('organizando');
+      if (!v) return;
+      (v.ordem || []).forEach(function (id) { var a = grade.querySelector(':scope > article[data-card="' + id + '"]'); if (a) grade.appendChild(a); });
+      (v.largos || []).forEach(function (id) { var a = grade.querySelector(':scope > article[data-card="' + id + '"]'); if (a) a.classList.add('largo'); });
+    }
+    function ordemVisual() {          // parte do que está na tela (padrão) para o modo livre
+      var lista = cards.slice().sort(function (x, y) { var a = x.getBoundingClientRect(), b = y.getBoundingClientRect(); return Math.abs(a.top - b.top) > 8 ? a.top - b.top : a.left - b.left; });
+      var menor = Math.min.apply(null, cards.map(function (a) { return a.getBoundingClientRect().width; }));
+      return { ordem: lista.map(function (a) { return a.dataset.card; }), largos: lista.filter(function (a) { return a.getBoundingClientRect().width > menor * 1.5; }).map(function (a) { return a.dataset.card; }) };
+    }
+    function liga(on) {
+      if (on && !ler()) { gravar(ordemVisual()); aplicar(); }
+      grade.classList.toggle('organizando', on);
+      bt.setAttribute('aria-pressed', on ? 'true' : 'false'); bt.textContent = on ? '✓ Concluir' : '✥ Organizar cards';
+      dica.hidden = !on; padrao.hidden = !on && !ler();
+    }
+    bt.addEventListener('click', function () { liga(!grade.classList.contains('organizando')); });
+    padrao.addEventListener('click', function () { gravar(null); aplicar(); liga(false); padrao.hidden = true; });
+    grade.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-org]'); if (!b) return;
+      var a = b.closest('article');
+      if (b.dataset.org === 'largo') a.classList.toggle('largo');
+      else if (b.dataset.org === 'sobe' && a.previousElementSibling) grade.insertBefore(a, a.previousElementSibling);
+      else if (b.dataset.org === 'desce' && a.nextElementSibling) grade.insertBefore(a.nextElementSibling, a);
+      gravar(estado()); b.focus();
+    });
+    // arrastar (mouse e dedo) pelo ⠿
+    var arr = null;
+    grade.addEventListener('pointerdown', function (e) {
+      var p = e.target.closest('.pega'); if (!p || !grade.classList.contains('organizando')) return;
+      e.preventDefault();
+      var a = p.closest('article'), r = a.getBoundingClientRect();
+      arr = { a: a, dx: e.clientX - r.left, dy: e.clientY - r.top, id: e.pointerId };
+      p.setPointerCapture(e.pointerId); a.classList.add('arrastando');
+    });
+    grade.addEventListener('pointermove', function (e) {
+      if (!arr || e.pointerId !== arr.id) return;
+      var a = arr.a;
+      a.style.visibility = 'hidden';
+      var alvo = document.elementFromPoint(e.clientX, e.clientY);
+      a.style.visibility = '';
+      alvo = alvo && alvo.closest('.cards.grade > article');
+      if (alvo && alvo !== a) {
+        var lista = Array.prototype.slice.call(grade.children);
+        grade.insertBefore(a, lista.indexOf(a) < lista.indexOf(alvo) ? alvo.nextElementSibling : alvo);
+      }
+      a.style.transform = 'none';
+      var base = a.getBoundingClientRect();
+      a.style.transform = 'translate(' + (e.clientX - arr.dx - base.left) + 'px,' + (e.clientY - arr.dy - base.top) + 'px)';
+      if (e.clientY < 70) window.scrollBy(0, -14); else if (e.clientY > window.innerHeight - 70) window.scrollBy(0, 14);
+    });
+    function solta(e) {
+      if (!arr || (e && e.pointerId !== arr.id)) return;
+      arr.a.style.transform = ''; arr.a.classList.remove('arrastando'); arr = null; gravar(estado());
+    }
+    grade.addEventListener('pointerup', solta); grade.addEventListener('pointercancel', solta);
+    if (mq.addEventListener) mq.addEventListener('change', function () { liga(false); aplicar(); });
+    aplicar();
+  })();
+
+  // ---------- Chave pessoal (no app do iPhone a memória é separada do Safari) ----------
+  (function () {
+    var f = document.getElementById('chaveForm'); if (!f) return;
+    f.hidden = !!chave;
+    f.addEventListener('submit', function (e) {
+      e.preventDefault(); var v = document.getElementById('chaveCampo').value.trim(); if (!v) return;
+      try { localStorage.setItem('sd-chave', v); } catch (er) {} location.reload();
+    });
+  })();
 
   function atualiza() {
     clima(); cambio(); bc(); meusSites(); acDesenha(); indCard(); alCarregar(); jkCarregar(); ctCarregar(); postCarregar();
