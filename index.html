@@ -287,6 +287,31 @@ h2 { margin:0; font-family:Manrope, sans-serif; font-size:20px; font-weight:700;
 .pst-rot { display:flex; align-items:center; justify-content:space-between; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
 .pst-rot button { height:30px; padding:0 12px; font-size:12px; letter-spacing:0; text-transform:none; }
 .pst-texto { white-space:pre-wrap; font-size:14px; line-height:1.5; padding:12px 14px; border:1px solid var(--border); border-radius:12px; max-height:240px; overflow:auto; }
+.cl-grade { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:14px; }
+.cl-grupo { display:flex; flex-direction:column; gap:8px; }
+.cl-grupo h3 { margin:0; font-size:12px; letter-spacing:.1em; color:var(--accent); }
+.cl-lista { border:1px solid var(--border); border-radius:12px; background:var(--surface); }
+.cl-lista summary { list-style:none; cursor:pointer; display:flex; justify-content:space-between; align-items:center; padding:12px 14px; font-weight:700; }
+.cl-lista summary::-webkit-details-marker { display:none; }
+.cl-lista summary::after { content:"▾"; color:var(--accent); margin-left:8px; transition:transform .2s; }
+.cl-lista[open] summary::after { transform:rotate(180deg); }
+.cl-lista summary small { margin-left:auto; color:var(--muted); font-weight:500; }
+.cl-itens { display:flex; flex-direction:column; padding:0 8px 10px; gap:2px; }
+.cl-item { display:flex; align-items:center; gap:6px; }
+.cl-item > a, .cl-semlink { flex:1; text-align:left; padding:8px 8px; border-radius:8px; color:var(--text); font-size:14px; background:none; border:0; height:auto; font-weight:500; }
+.cl-item > a:hover, .cl-semlink:hover { background:color-mix(in srgb, var(--accent) 12%, transparent); text-decoration:none; }
+.cl-semlink { color:var(--muted); cursor:pointer; }
+.cl-semlink small { color:var(--accent); }
+.cl-mini { height:30px; width:30px; padding:0; background:none; border:1px solid transparent; color:var(--muted); }
+.cl-mini:hover { border-color:var(--border); color:var(--text); }
+.cl-nova { align-self:flex-start; height:32px; padding:0 10px; font-size:13px; background:none; border:1px dashed var(--border); color:var(--accent); margin:4px 8px 0; }
+.cl-form .ct-erro:empty { display:none; }
+.cl-form { display:flex; flex-direction:column; gap:6px; padding:8px; border:1px solid var(--accent); border-radius:10px; margin:4px 0; }
+.cl-form input { height:36px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text); padding:0 10px; font:inherit; font-size:13px; min-width:0; }
+.cl-bts { display:flex; gap:6px; flex-wrap:wrap; } .cl-bts button { height:32px; padding:0 12px; font-size:13px; }
+.cl-rodape { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:4px; }
+.cl-grande { display:flex; align-items:center; justify-content:center; height:48px; border-radius:12px; background:var(--btn); color:var(--btnText); font-weight:700; text-decoration:none; }
+.cl-grande:hover { text-decoration:none; filter:brightness(1.05); }
 .nota-fluxo { margin:2px 0 0; font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .lista-links { display:flex; flex-direction:column; gap:8px; }
 .lista-links a { display:flex; align-items:center; min-height:44px; padding:0 14px; border-radius:12px; border:1px solid var(--border); color:var(--text); font-weight:600; font-size:14px; }
@@ -388,7 +413,7 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     <a class="pri" href="https://www.s2bt.com.br">S2BT Energia</a>
     <button type="button" class="pri" data-pop="network">Network ▾</button>
     <button type="button" class="pri" data-pop="smartspin">Smart Spin ▾</button>
-    <a class="pri" href="https://claude.ai">Claude</a>
+    <button type="button" class="pri" data-pop="claude">Claude ▾</button>
   </div>
   <div class="icones" aria-label="Comunicação">
     <a class="ico" href="https://mail.google.com" aria-label="Gmail" title="Gmail"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></a>
@@ -1533,8 +1558,77 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     }
   });
 
+
+  // ---------- Painel Claude: diretorias e projetos (S2BT e Smart Spin) ----------
+  var CL = null, clEdit = null;
+  var CL_GRUPOS = [['s2bt', 'S2BT'], ['smartspin', 'SMART SPIN']], CL_LISTAS = [['diretorias', 'Diretorias', 'diretoria'], ['projetos', 'Projetos', 'projeto']];
+  var clAbertas = {};
+  function clUrl() { return '/api/claude' + (chave ? '?k=' + encodeURIComponent(chave) : ''); }
+  function clDesenha() {
+    var corpo = document.getElementById('popCorpo');
+    if (!CL || CL.erro) { corpo.innerHTML = '<p class="ct-erro">' + esc(CL && CL.erro || 'Carregando…') + '</p>' + clRodape(); return; }
+    var h = '';
+    CL_GRUPOS.forEach(function (g) {
+      h += '<section class="cl-grupo"><h3>' + g[1] + '</h3>';
+      CL_LISTAS.forEach(function (l) {
+        var itens = CL[g[0]][l[0]], id = g[0] + ':' + l[0];
+        h += '<details class="cl-lista" data-cl="' + id + '"' + (clAbertas[id] ? ' open' : '') + '><summary><span>' + l[1] + '</span><small>' + itens.length + '</small></summary><div class="cl-itens">';
+        h += itens.map(function (it, i) {
+          var ed = clEdit && clEdit.g === g[0] && clEdit.l === l[0] && clEdit.i === i;
+          if (ed) return clForm(g[0], l[0], i, it);
+          return '<div class="cl-item">' + (it.url ? '<a href="' + esc(it.url) + '" target="_blank" rel="noopener">' + esc(it.nome) + '</a>'
+            : '<button type="button" class="cl-semlink" data-cl-edit="' + g[0] + ':' + l[0] + ':' + i + '" title="Cole o link deste projeto/conversa no Claude">' + esc(it.nome) + ' <small>· colar link</small></button>') +
+            '<button type="button" class="cl-mini" data-cl-edit="' + g[0] + ':' + l[0] + ':' + i + '" aria-label="Editar">✎</button></div>';
+        }).join('');
+        var novo = clEdit && clEdit.g === g[0] && clEdit.l === l[0] && clEdit.i === -1;
+        h += novo ? clForm(g[0], l[0], -1, { nome: '', url: '' }) : '<button type="button" class="cl-nova" data-cl-edit="' + g[0] + ':' + l[0] + ':-1">＋ Nova ' + l[2] + '</button>';
+        h += '</div></details>';
+      });
+      h += '</section>';
+    });
+    corpo.innerHTML = '<div class="cl-grade">' + h + '</div>' + clRodape();
+    var f = document.getElementById('clForm'); if (f) { var n = f.querySelector('[name=nome]'); if (n && !n.value) n.focus(); }
+  }
+  function clRodape() {
+    return '<div class="cl-rodape"><a class="cl-grande" href="https://claude.ai/projects" target="_blank" rel="noopener">📁 Novo projeto</a><a class="cl-grande" href="https://claude.ai/new" target="_blank" rel="noopener">💬 Nova conversa</a></div>' +
+      '<p class="nota-fluxo">Para ligar um item: abra o projeto ou a conversa no Claude, copie o endereço da barra e cole em "colar link" ou no ✎.</p>';
+  }
+  function clForm(g, l, i, it) {
+    return '<form class="cl-form" id="clForm" data-g="' + g + '" data-l="' + l + '" data-i="' + i + '"><input name="nome" maxlength="60" placeholder="Nome" value="' + esc(it.nome) + '" required>' +
+      '<input name="url" placeholder="https://claude.ai/project/…  (opcional)" value="' + esc(it.url) + '"><div class="cl-bts"><button type="submit">Salvar</button><button type="button" class="editar" data-cl-cancela="1">Cancelar</button>' +
+      (i >= 0 ? '<button type="button" class="editar" data-cl-apaga="1">Apagar</button>' : '') + '</div><p class="ct-erro" id="clMsg"></p></form>';
+  }
+  function clPost(corpo) {
+    return fetch(clUrl(), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corpo) }).then(function (r) { return r.json(); })
+      .then(function (d) { if (d.erro) throw d.erro; CL = d; clEdit = null; clDesenha(); })
+      .catch(function (e) { var m = document.getElementById('clMsg'); if (m) m.textContent = typeof e === 'string' ? e : 'Não salvou agora.'; });
+  }
+  function abreClaude() {
+    ctAberto = false; clEdit = null; set('popTitulo', 'Claude'); clDesenha();
+    document.getElementById('popFundo').hidden = false; document.getElementById('popFechar').focus();
+    if (!chave) { CL = { erro: 'Abra pelo seu link pessoal para ver e editar seus atalhos.' }; clDesenha(); return; }
+    fetch(clUrl(), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (d) { CL = d; clDesenha(); })
+      .catch(function () { CL = { erro: 'Não carregou agora.' }; clDesenha(); });
+  }
+  document.getElementById('popCorpo').addEventListener('toggle', function (e) {
+    var d = e.target; if (d.matches && d.matches('details.cl-lista')) clAbertas[d.dataset.cl] = d.open;
+  }, true);
+  document.getElementById('popCorpo').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-cl-edit],[data-cl-cancela],[data-cl-apaga]'); if (!b) return;
+    e.preventDefault();
+    if (b.dataset.clEdit) { var p = b.dataset.clEdit.split(':'); clEdit = { g: p[0], l: p[1], i: +p[2] }; clAbertas[p[0] + ':' + p[1]] = true; clDesenha(); return; }
+    if (b.dataset.clCancela) { clEdit = null; clDesenha(); return; }
+    if (b.dataset.clApaga) { var f = b.closest('form'); if (b.dataset.ok) clPost({ acao: 'apagar', grupo: f.dataset.g, lista: f.dataset.l, indice: +f.dataset.i }); else { b.dataset.ok = 1; b.textContent = 'Confirmar?'; } }
+  });
+  document.getElementById('popCorpo').addEventListener('submit', function (e) {
+    var f = e.target; if (f.id !== 'clForm') return; e.preventDefault();
+    var i = +f.dataset.i;
+    clPost({ acao: 'salvar', grupo: f.dataset.g, lista: f.dataset.l, indice: i >= 0 ? i : undefined, item: { nome: f.nome.value, url: f.url.value } });
+  });
+
   function abrePop(qual) {
     ctAberto = false;
+    if (qual === 'claude') { abreClaude(); return; }
     var corpo = document.getElementById('popCorpo');
     if (qual === 'smartspin') {
       set('popTitulo', 'Smart Spin · projetos');
