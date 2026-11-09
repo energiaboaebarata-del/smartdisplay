@@ -7,7 +7,8 @@ const PADRAO = {
     projetos: ["Plataforma S2BT", "LLE · Leads Estratégicos", "Rede de parceiros"].map(nome => ({ nome, url: "" })),
   },
   smartspin: {
-    diretorias: [],
+    diretorias: ["Estratégia e Pesquisa de Mercado", "Produto e Design", "TI e Engenharia", "Comercial e Anunciantes", "Marketing e Audiência",
+      "Sucesso do Cliente", "Jurídico e Financeiro", "RH e Pessoas"].map(nome => ({ nome, url: "" })),
     projetos: ["SmartDisplay", "Rolê BR", "Prumo", "Bola", "Tatame", "Cupom", "Comparador", "Viagens", "Casa inteligente"].map(nome => ({ nome, url: "" })),
   },
 };
@@ -19,6 +20,8 @@ export async function onRequest({ request, env }) {
   if (!env.SD_CHAVE || u.searchParams.get("k") !== env.SD_CHAVE) return json({ erro: "abra pelo seu link pessoal" }, 401);
   if (!env.ALERTAS) return json({ erro: "falta ligar o armazenamento ALERTAS no Cloudflare" }, 503);
   const db = JSON.parse((await env.ALERTAS.get("claude")) || "null") || JSON.parse(JSON.stringify(PADRAO));
+  // diretorias da Smart Spin: se ainda estiverem vazias, entram as do padrão (com RH)
+  if (!db.smartspin.diretorias.length) db.smartspin.diretorias = JSON.parse(JSON.stringify(PADRAO.smartspin.diretorias));
   if (request.method === "POST") {
     const d = await request.json().catch(() => ({}));
     if (!GRUPOS.includes(d.grupo) || !LISTAS.includes(d.lista)) return json({ erro: "lista inválida" }, 400);
