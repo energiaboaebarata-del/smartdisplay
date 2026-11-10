@@ -987,12 +987,13 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     pega('/api/acao?t=' + encodeURIComponent(cod) + '&range=' + range).then(function (a) {
       if (!a || a.erro) throw (a && a.erro) || 'erro';
       document.getElementById('gtitulo').textContent = cod + ' · ' + a.nome;
-      gConf.extra = 'Valor de mercado: ' + bilhoes(a.valorMercado);
+      gConf.extra = a.valorMercado ? 'Valor de mercado: ' + bilhoes(a.valorMercado) : '';
+      document.getElementById('gfonte').innerHTML = 'Fonte: ' + esc(a.fonte || 'brapi.dev') + ' · <a href="https://www.google.com/finance/quote/' + esc(cod) + ':BVMF">ver no Google Finance</a>';
       gDados = (a.historico || []).map(function (p) { var t = new Date(p.t * 1000); return { t: t, v: Number(p.v), d: dd(t) }; });
       desenha();
     }).catch(function (e) {
       document.getElementById('gresumo').textContent = /chave|BRAPI/.test(String(e)) ? 'Falta configurar a chave da brapi no Cloudflare.' :
-        (range !== '3mo' && range !== '1mo') ? 'Este período não carregou (o plano grátis da brapi pode limitar). Tente 3 meses.' : 'Não carregou agora. Tente de novo em alguns minutos.';
+        'Não carregou agora. Tente de novo em alguns minutos.';
     });
   }
   function desenha() {
