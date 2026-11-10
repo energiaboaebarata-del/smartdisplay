@@ -313,6 +313,11 @@ h2 { margin:0; font-family:Manrope, sans-serif; font-size:20px; font-weight:700;
 .cl-grande { display:flex; align-items:center; justify-content:center; height:48px; border-radius:12px; background:var(--btn); color:var(--btnText); font-weight:700; text-decoration:none; }
 .cl-grande:hover { text-decoration:none; filter:brightness(1.05); }
 .cat-topo .cat-item { border:1px solid var(--accent); border-radius:12px; margin-bottom:12px; padding:10px 14px; }
+.cat-icos { display:flex; align-items:center; padding-left:10px; }
+.cat-icos img, .cat-mais { width:34px; height:34px; border-radius:9px; margin-left:-10px; border:2px solid var(--surface); object-fit:cover; background:var(--bg); flex:0 0 auto; }
+.cat-mais { display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--text); }
+.cl-lista.cat summary { min-height:58px; }
+.cat-ico { width:32px; height:32px; border-radius:8px; object-fit:cover; flex:0 0 auto; }
 .cat-grade { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:10px; align-items:start; }
 .cat-item { display:flex; align-items:center; gap:10px; padding:8px; border-radius:8px; color:var(--text); text-decoration:none; }
 .cl-lista.cat summary small { white-space:nowrap; font-size:12px; padding-left:8px; }
@@ -1322,39 +1327,39 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
 
   // ---------- Painéis Smart Spin e Network ----------
   var PROJETOS = [
-    { id: 'smartspin', nome: 'Smart Spin', desc: 'site principal', url: 'https://smartspin.com.br', cat: 'topo' },
-    { id: 'bola', nome: 'Bola', desc: 'o Diário da Arquibancada', url: 'https://bola.smartspin.com.br', cat: 'esporte' },
-    { id: 'tatame', nome: 'Tatame', desc: 'tudo sobre lutas', url: 'https://tatame.smartspin.com.br', cat: 'esporte' },
-    { id: 'role', nome: 'Rolê BR', desc: 'passeios, cultura, bares e restaurantes', url: 'https://rolebr.s2bt.com.br', cat: 'esporte' },
-    { id: 'cosmograma', nome: 'Cosmograma', desc: 'personalidade e afinidade', url: 'https://cosmograma.smartspin.com.br', cat: 'esporte' },
-    { id: 'sports4u', nome: 'Sports4U', desc: 'o novo app de esportes', url: '', cat: 'esporte', breve: true },
-    { id: 's2bt', nome: 'S2BT Energia', desc: 'energia mais barata para casa e empresa', url: 'https://www.s2bt.com.br', cat: 'dinheiro' },
-    { id: 'viagens', nome: 'Smart Spin Viagens', desc: 'viaje mais, pagando menos', url: 'https://smartspin.com.br/viagens/', cat: 'dinheiro' },
-    { id: 'cupom', nome: 'Cupom', desc: 'cupons conferidos das suas lojas', url: 'https://cupom.smartspin.com.br', cat: 'dinheiro' },
-    { id: 'comparador', nome: 'Comparador', desc: 'o Raio X da sua conta', url: 'https://comparador.smartspin.com.br', cat: 'dinheiro' },
-    { id: 'cartarara', nome: 'Carta Rara', desc: 'quanto vale a sua carta', url: 'https://smartspin.com.br/cartas/', cat: 'dinheiro' },
-    { id: 'prumo', nome: 'Prumo', desc: 'assessor pessoal', url: 'https://prumo.s2bt.com.br', cat: 'dinheiro', breve: true },
-    { id: 'delivery', nome: 'Pede Direto', desc: 'iFood, 99Food ou direto: qual sai mais barato', url: 'https://smartspin.com.br/delivery/', cat: 'dinheiro', breve: true },
-    { id: 'mercado', nome: 'Carrinho Certo', desc: 'sua lista no mercado mais barato', url: 'https://smartspin.com.br/mercado/', cat: 'dinheiro', breve: true },
-    { id: 'corrida', nome: 'Corrida Certa', desc: 'Uber, 99 ou inDrive: qual sai mais barato', url: 'https://smartspin.com.br/corrida/', cat: 'dinheiro', breve: true },
-    { id: 'poderometro', nome: 'Poderômetro', desc: 'quem governa, com dados oficiais', url: 'https://poderometro.com.br', cat: 'info' },
-    { id: 'prisma', nome: 'Prisma', desc: 'além das bandeiras, os fatos', url: 'https://prisma.poderometro.com.br', cat: 'info' },
-    { id: 'inclui', nome: 'Inclui+', desc: 'direitos da pessoa com deficiência', url: 'https://incluimais.s2bt.com.br', cat: 'info' },
-    { id: 'consumidor', nome: 'ChamaLei', desc: 'direitos no consumo, aluguel e condomínio', url: 'https://smartspin.com.br/consumidor/', cat: 'info' },
-    { id: 'resenhabook', nome: 'Resenhabook', desc: 'os livros mais vendidos em resenhas rápidas', url: 'https://smartspin.com.br/resenhabook/', cat: 'info' },
-    { id: 'agape', nome: 'Ágape Resolve', desc: 'profissionais de confiança da rede Ágape', url: 'https://agaperesolve.s2bt.com.br', cat: 'ferramentas' },
-    { id: 'velocidade', nome: 'Velocímetro', desc: 'a velocidade real da sua internet', url: 'https://smartspin.com.br/velocidade/', cat: 'ferramentas' },
-    { id: 'compressor', nome: 'Enxuto', desc: 'fotos e vídeos mais leves', url: 'https://smartspin.com.br/compressor/', cat: 'ferramentas' },
-    { id: 'pdf', nome: 'Folha Livre', desc: 'seus PDFs sem complicação', url: 'https://smartspin.com.br/pdf/', cat: 'ferramentas' },
-    { id: 'smartdisplay', nome: 'SmartDisplay', desc: 'esta página inicial', url: 'https://smartdisplay-56n.pages.dev', cat: 'ferramentas' },
-    { id: 'legado', nome: 'Legado', desc: 'escolhas, dinheiro e amigos', url: 'https://smartspin.com.br/legado/', cat: 'jogos' },
-    { id: 'alpinista', nome: 'O Alpinista', desc: 'suba a montanha respondendo', url: 'https://smartspin.com.br/alpinista/', cat: 'jogos' },
-    { id: 'jogodopoder', nome: 'Jogo do Poder', desc: 'quem governa, em palavras cruzadas', url: 'https://smartspin.com.br/jogodopoder/', cat: 'jogos' },
+    { id: 'smartspin', nome: 'Smart Spin', desc: 'site principal', url: 'https://smartspin.com.br', cat: 'topo', ico: 'https://smartspin.com.br/icon-192.png' },
+    { id: 'bola', nome: 'Bola', desc: 'o Diário da Arquibancada', url: 'https://bola.smartspin.com.br', cat: 'esporte', ico: 'https://smartspin.com.br/apps/bola.svg' },
+    { id: 'tatame', nome: 'Tatame', desc: 'tudo sobre lutas', url: 'https://tatame.smartspin.com.br', cat: 'esporte', ico: 'https://smartspin.com.br/apps/tatame.jpg' },
+    { id: 'role', nome: 'Rolê BR', desc: 'passeios, cultura, bares e restaurantes', url: 'https://rolebr.s2bt.com.br', cat: 'esporte', ico: 'https://smartspin.com.br/apps/rolebr.jpg' },
+    { id: 'cosmograma', nome: 'Cosmograma', desc: 'personalidade e afinidade', url: 'https://cosmograma.smartspin.com.br', cat: 'esporte', ico: 'https://smartspin.com.br/apps/cosmograma.svg' },
+    { id: 'sports4u', nome: 'Sports4U', desc: 'o novo app de esportes', url: '', cat: 'esporte', breve: true, ico: 'https://smartspin.com.br/apps/sports4u.svg' },
+    { id: 's2bt', nome: 'S2BT Energia', desc: 'energia mais barata para casa e empresa', url: 'https://www.s2bt.com.br', cat: 'dinheiro', ico: 'https://smartspin.com.br/apps/s2bt.jpg' },
+    { id: 'viagens', nome: 'Smart Spin Viagens', desc: 'viaje mais, pagando menos', url: 'https://smartspin.com.br/viagens/', cat: 'dinheiro', ico: 'https://smartspin.com.br/apps/viagens.png' },
+    { id: 'cupom', nome: 'Cupom', desc: 'cupons conferidos das suas lojas', url: 'https://cupom.smartspin.com.br', cat: 'dinheiro', ico: 'https://smartspin.com.br/apps/cupom.jpg' },
+    { id: 'comparador', nome: 'Comparador', desc: 'o Raio X da sua conta', url: 'https://comparador.smartspin.com.br', cat: 'dinheiro', ico: 'https://smartspin.com.br/apps/comparador.jpg' },
+    { id: 'cartarara', nome: 'Carta Rara', desc: 'quanto vale a sua carta', url: 'https://smartspin.com.br/cartas/', cat: 'dinheiro', ico: 'https://smartspin.com.br/apps/cartarara.png' },
+    { id: 'prumo', nome: 'Prumo', desc: 'assessor pessoal', url: 'https://prumo.s2bt.com.br', cat: 'dinheiro', breve: true, ico: 'https://smartspin.com.br/apps/prumo.jpg' },
+    { id: 'delivery', nome: 'Pede Direto', desc: 'iFood, 99Food ou direto: qual sai mais barato', url: 'https://smartspin.com.br/delivery/', cat: 'dinheiro', breve: true, ico: 'https://smartspin.com.br/apps/delivery.png' },
+    { id: 'mercado', nome: 'Carrinho Certo', desc: 'sua lista no mercado mais barato', url: 'https://smartspin.com.br/mercado/', cat: 'dinheiro', breve: true, ico: 'https://smartspin.com.br/apps/mercado.png' },
+    { id: 'corrida', nome: 'Corrida Certa', desc: 'Uber, 99 ou inDrive: qual sai mais barato', url: 'https://smartspin.com.br/corrida/', cat: 'dinheiro', breve: true, ico: 'https://smartspin.com.br/apps/corrida.png' },
+    { id: 'poderometro', nome: 'Poderômetro', desc: 'quem governa, com dados oficiais', url: 'https://poderometro.com.br', cat: 'info', ico: 'https://smartspin.com.br/apps/poderometro.jpg' },
+    { id: 'prisma', nome: 'Prisma', desc: 'além das bandeiras, os fatos', url: 'https://prisma.poderometro.com.br', cat: 'info', ico: 'https://smartspin.com.br/apps/prisma.svg' },
+    { id: 'inclui', nome: 'Inclui+', desc: 'direitos da pessoa com deficiência', url: 'https://incluimais.s2bt.com.br', cat: 'info', ico: 'https://smartspin.com.br/apps/inclui.jpg' },
+    { id: 'consumidor', nome: 'ChamaLei', desc: 'direitos no consumo, aluguel e condomínio', url: 'https://smartspin.com.br/consumidor/', cat: 'info', ico: 'https://smartspin.com.br/apps/consumidor.png' },
+    { id: 'resenhabook', nome: 'Resenhabook', desc: 'os livros mais vendidos em resenhas rápidas', url: 'https://smartspin.com.br/resenhabook/', cat: 'info', ico: 'https://smartspin.com.br/apps/resenhabook.svg' },
+    { id: 'agape', nome: 'Ágape Resolve', desc: 'profissionais de confiança da rede Ágape', url: 'https://agaperesolve.s2bt.com.br', cat: 'ferramentas', ico: 'https://smartspin.com.br/apps/agaperesolve.png' },
+    { id: 'velocidade', nome: 'Velocímetro', desc: 'a velocidade real da sua internet', url: 'https://smartspin.com.br/velocidade/', cat: 'ferramentas', ico: 'https://smartspin.com.br/apps/velocidade.png' },
+    { id: 'compressor', nome: 'Enxuto', desc: 'fotos e vídeos mais leves', url: 'https://smartspin.com.br/compressor/', cat: 'ferramentas', ico: 'https://smartspin.com.br/apps/compressor.png' },
+    { id: 'pdf', nome: 'Folha Livre', desc: 'seus PDFs sem complicação', url: 'https://smartspin.com.br/pdf/', cat: 'ferramentas', ico: 'https://smartspin.com.br/apps/pdf.png' },
+    { id: 'smartdisplay', nome: 'SmartDisplay', desc: 'esta página inicial', url: 'https://smartdisplay-56n.pages.dev', cat: 'ferramentas', ico: '/icone-192.png' },
+    { id: 'legado', nome: 'Legado', desc: 'escolhas, dinheiro e amigos', url: 'https://smartspin.com.br/legado/', cat: 'jogos', ico: 'https://smartspin.com.br/apps/legado.png' },
+    { id: 'alpinista', nome: 'O Alpinista', desc: 'suba a montanha respondendo', url: 'https://smartspin.com.br/alpinista/', cat: 'jogos', ico: 'https://smartspin.com.br/apps/alpinista.png' },
+    { id: 'jogodopoder', nome: 'Jogo do Poder', desc: 'quem governa, em palavras cruzadas', url: 'https://smartspin.com.br/jogodopoder/', cat: 'jogos', ico: 'https://smartspin.com.br/apps/jogodopoder.png' },
     { id: 'jporcaro', nome: 'JPorcaro', desc: 'terapia quântica', url: 'https://jporcaro.smartspin.com.br', cat: 'sites' },
     { id: 'jspinola', nome: 'JSpinola', desc: 'cibernética social', url: 'https://jspinola.smartspin.com.br', cat: 'sites' },
     { id: 'allanbernacchi', nome: 'Dr. Allan Bernacchi', desc: 'cirurgia plástica', url: 'https://allanbernacchi.smartspin.com.br', cat: 'sites' },
-    { id: 'ayslamodas', nome: 'Aysla Modas', desc: 'moda feminina', url: 'https://ayslamodas.smartspin.com.br', cat: 'sites' },
-    { id: 'abjb', nome: 'ABJB', desc: 'publicação do Jardim Botânico · em proposta', url: '', cat: 'sites', breve: true },
+    { id: 'ayslamodas', nome: 'Aysla Modas', desc: 'moda feminina', url: 'https://ayslamodas.smartspin.com.br', cat: 'lojas' },
+    { id: 'abjb', nome: 'ABJB', desc: 'publicação do Jardim Botânico', url: '', cat: 'sites', breve: true },
     { id: 'ex-personal', nome: 'Bruno Ferraz', desc: 'personal trainer', url: 'https://smartspin.com.br/exemplos/personal/', cat: 'exemplos' },
     { id: 'ex-unhas', nome: 'Lia Monteiro', desc: 'nail designer', url: 'https://smartspin.com.br/exemplos/unhas/', cat: 'exemplos' },
     { id: 'ex-eletricista', nome: 'Marcos Vidal', desc: 'eletricista', url: 'https://smartspin.com.br/exemplos/eletricista/', cat: 'exemplos' },
@@ -1365,7 +1370,13 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     { id: 'ex-barbearia', nome: 'Barbearia Corte Fino', desc: 'agenda com pagamento', url: 'https://smartspin.com.br/exemplos/barbearia/', cat: 'exemplos' },
     { id: 'ex-delivery', nome: 'Brasa & Pão', desc: 'delivery próprio', url: 'https://smartspin.com.br/exemplos/delivery/', cat: 'exemplos' }
   ];
-  var CATEGORIAS = [['esporte', 'Esporte e Bem-estar'], ['dinheiro', 'Dinheiro e Dia a Dia'], ['info', 'Informação e Cidadania'], ['ferramentas', 'Ferramentas'], ['jogos', 'Jogos'], ['sites', 'Sites Profissionais'], ['exemplos', 'Sites Exemplo']];
+  var ICO_GEN = {
+    sites: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><rect width="96" height="96" rx="22" fill="#0F766E"/><circle cx="48" cy="36" r="15" fill="#E6FFFA"/><path d="M20 82c2-17 13-27 28-27s26 10 28 27z" fill="#E6FFFA"/><path d="M48 55l-6 8 6 19 6-19z" fill="#0F766E"/></svg>'),
+    lojas: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><rect width="96" height="96" rx="22" fill="#BE185D"/><path d="M18 40l6-18h48l6 18z" fill="#FFE4EF"/><path d="M18 40h60v6a10 10 0 0 1-20 0 10 10 0 0 1-20 0 10 10 0 0 1-20 0z" fill="#FBCFE0"/><rect x="24" y="52" width="48" height="26" rx="3" fill="#FFE4EF"/><rect x="42" y="60" width="12" height="18" fill="#BE185D"/></svg>'),
+    exemplos: 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><rect width="96" height="96" rx="22" fill="#1D4ED8"/><circle cx="48" cy="42" r="22" fill="none" stroke="#DBEAFE" stroke-width="4"/><ellipse cx="48" cy="42" rx="9" ry="22" fill="none" stroke="#DBEAFE" stroke-width="3"/><path d="M26 42h44M30 31h36M30 53h36" stroke="#DBEAFE" stroke-width="3"/><text x="48" y="86" text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="17" fill="#DBEAFE">www</text></svg>')
+  };
+  function icoDe(p) { return p.ico || ICO_GEN[p.cat] || ''; }
+  var CATEGORIAS = [['esporte', 'Esporte e Bem-estar'], ['dinheiro', 'Dinheiro e Dia a Dia'], ['info', 'Informação e Cidadania'], ['ferramentas', 'Ferramentas'], ['jogos', 'Jogos'], ['sites', 'Sites Profissionais'], ['lojas', 'Lojas'], ['exemplos', 'Sites Exemplo']];
   var catAbertas = {};
   var NETWORK = [
     ['Redes', [['LinkedIn · Rafael', 'https://www.linkedin.com/in/rafaspinola/'], ['LinkedIn · S2BT', 'https://www.linkedin.com/company/s2bt-energia/'], ['@orafaelspinola', 'https://www.instagram.com/orafaelspinola/'], ['@s2bt.energia', 'https://www.instagram.com/s2bt.energia/']]],
@@ -1678,14 +1689,16 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
         var linha = function (p) {
           var f = fluxo && fluxo[p.id], n = f ? f.dias30 : (fluxo ? 0 : null);
           return '<a class="cat-item' + (p.url ? '' : ' off') + '" ' + (p.url ? 'href="' + p.url + '"' : 'aria-disabled="true"') + ' title="' + (f ? 'Hoje: ' + f.hoje + ' · 30 dias: ' + f.dias30 + ' · total: ' + f.total : 'Contador ainda sem dados') + '">' +
-            '<span class="cat-nome"><b>' + esc(p.nome) + '</b><small>' + esc((p.breve || !p.url ? 'em breve · ' : '') + p.desc) + '</small></span><span class="cont" aria-label="visitas em 30 dias">' + curto(n) + '</span></a>';
+            (icoDe(p) ? '<img class="cat-ico" src="' + icoDe(p) + '" alt="" width="32" height="32" loading="lazy">' : '') + '<span class="cat-nome"><b>' + esc(p.nome) + '</b><small>' + esc((p.breve || !p.url ? 'em breve · ' : '') + p.desc) + '</small></span><span class="cont" aria-label="visitas em 30 dias">' + curto(n) + '</span></a>';
         };
         var topo = PROJETOS.filter(function (p) { return p.cat === 'topo'; });
         var h = '<div class="cat-topo">' + topo.map(linha).join('') + '</div><div class="cat-grade">';
         h += CATEGORIAS.map(function (c) {
           var its = PROJETOS.filter(function (p) { return p.cat === c[0]; }).sort(function (x, y) { return x.nome.replace(/^(Dr\.|O|A)\s+/, '').localeCompare(y.nome.replace(/^(Dr\.|O|A)\s+/, ''), 'pt-BR', { sensitivity: 'base' }); });
           var soma = its.reduce(function (s, p) { var f = fluxo && fluxo[p.id]; return s + (f ? f.dias30 : 0); }, 0);
-          return '<details class="cl-lista cat" data-cat="' + c[0] + '"' + (catAbertas[c[0]] ? ' open' : '') + '><summary><span>' + c[1] + '</span><small>' + its.length + (its.length === 1 ? ' item' : ' itens') + (fluxo ? ' · ' + curto(soma) + ' visitas' : '') + '</small></summary>' +
+          var srcs = its.map(icoDe).filter(function (s, i, l) { return s && l.indexOf(s) === i; });
+          var icos = srcs.slice(0, 6).map(function (s) { return '<img src="' + s + '" alt="" width="34" height="34" loading="lazy">'; }).join('') + (srcs.length > 6 ? '<span class="cat-mais">+' + (srcs.length - 6) + '</span>' : '');
+          return '<details class="cl-lista cat" data-cat="' + c[0] + '"' + (catAbertas[c[0]] ? ' open' : '') + '><summary title="' + c[1] + '" aria-label="' + c[1] + '"><span class="cat-icos">' + icos + '</span><small>' + its.length + (fluxo ? ' · ' + curto(soma) + ' visitas' : '') + '</small></summary>' +
             '<div class="cl-itens">' + its.map(linha).join('') + '</div></details>';
         }).join('');
         corpo.innerHTML = h + '</div><p class="nota-fluxo">Visitantes nos últimos 30 dias (1 por aparelho por dia) · passe o mouse para ver hoje e o total</p>';
