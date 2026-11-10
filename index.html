@@ -1683,7 +1683,7 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
         var topo = PROJETOS.filter(function (p) { return p.cat === 'topo'; });
         var h = '<div class="cat-topo">' + topo.map(linha).join('') + '</div><div class="cat-grade">';
         h += CATEGORIAS.map(function (c) {
-          var its = PROJETOS.filter(function (p) { return p.cat === c[0]; });
+          var its = PROJETOS.filter(function (p) { return p.cat === c[0]; }).sort(function (x, y) { return x.nome.replace(/^(Dr\.|O|A)\s+/, '').localeCompare(y.nome.replace(/^(Dr\.|O|A)\s+/, ''), 'pt-BR', { sensitivity: 'base' }); });
           var soma = its.reduce(function (s, p) { var f = fluxo && fluxo[p.id]; return s + (f ? f.dias30 : 0); }, 0);
           return '<details class="cl-lista cat" data-cat="' + c[0] + '"' + (catAbertas[c[0]] ? ' open' : '') + '><summary><span>' + c[1] + '</span><small>' + its.length + (its.length === 1 ? ' item' : ' itens') + (fluxo ? ' · ' + curto(soma) + ' visitas' : '') + '</small></summary>' +
             '<div class="cl-itens">' + its.map(linha).join('') + '</div></details>';
