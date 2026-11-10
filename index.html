@@ -312,6 +312,15 @@ h2 { margin:0; font-family:Manrope, sans-serif; font-size:20px; font-weight:700;
 .cl-rodape { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:4px; }
 .cl-grande { display:flex; align-items:center; justify-content:center; height:48px; border-radius:12px; background:var(--btn); color:var(--btnText); font-weight:700; text-decoration:none; }
 .cl-grande:hover { text-decoration:none; filter:brightness(1.05); }
+.cat-topo .cat-item { border:1px solid var(--accent); border-radius:12px; margin-bottom:12px; padding:10px 14px; }
+.cat-grade { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:10px; align-items:start; }
+.cat-item { display:flex; align-items:center; gap:10px; padding:8px; border-radius:8px; color:var(--text); text-decoration:none; }
+.cl-lista.cat summary small { white-space:nowrap; font-size:12px; padding-left:8px; }
+.cat-item:hover { background:color-mix(in srgb, var(--accent) 12%, transparent); text-decoration:none; }
+.cat-item.off { opacity:.55; pointer-events:none; }
+.cat-nome { display:flex; flex-direction:column; min-width:0; flex:1; }
+.cat-nome b { font-size:14px; } .cat-nome small { font-size:12px; color:var(--muted); }
+.cat-item .cont { flex:0 0 auto; min-width:34px; height:24px; padding:0 8px; border-radius:999px; background:var(--btn); color:var(--btnText); font-size:12px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; }
 .nota-fluxo { margin:2px 0 0; font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .lista-links { display:flex; flex-direction:column; gap:8px; }
 .lista-links a { display:flex; align-items:center; min-height:44px; padding:0 14px; border-radius:12px; border:1px solid var(--border); color:var(--text); font-weight:600; font-size:14px; }
@@ -1313,18 +1322,26 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
 
   // ---------- Painéis Smart Spin e Network ----------
   var PROJETOS = [
-    { id: 'smartspin', nome: 'Smart Spin', desc: 'site principal', url: 'https://smartspin.com.br' },
-    { id: 'poderometro', nome: 'Poderômetro', desc: 'política em dados', url: 'https://poderometro.com.br' },
-    { id: 'inclui', nome: 'Inclui+', desc: 'direitos PcD', url: 'https://incluimais.s2bt.com.br' },
-    { id: 'role', nome: 'Rolê', desc: 'turismo e passeios', url: 'https://rolebr.s2bt.com.br' },
-    { id: 'tatame', nome: 'Tatame', desc: 'lutas', url: 'https://tatame.smartspin.com.br' },
-    { id: 'cupom', nome: 'Cupom', desc: 'cupons e promoções', url: 'https://cupom.smartspin.com.br' },
-    { id: 'comparador', nome: 'Comparador', desc: 'internet, TV e celular', url: 'https://comparador.smartspin.com.br' },
-    { id: 'bola', nome: 'Bola', desc: 'jornal esportivo', url: 'https://bola.smartspin.com.br' },
-    { id: 'agape', nome: 'Ágape Resolve', desc: 'rede do BNI Ágape', url: 'https://agaperesolve.s2bt.com.br' },
-    { id: 'prumo', nome: 'Prumo', desc: 'assessor pessoal', url: 'https://prumo.s2bt.com.br' },
-    { id: 'prisma', nome: 'Prisma', desc: 'íntegra dos fatos e viés da imprensa', url: '' }
+    { id: 'smartspin', nome: 'Smart Spin', desc: 'site principal', url: 'https://smartspin.com.br', cat: 'topo' },
+    { id: 'bola', nome: 'Bola', desc: 'jornal esportivo', url: 'https://bola.smartspin.com.br', cat: 'esporte' },
+    { id: 'tatame', nome: 'Tatame', desc: 'lutas', url: 'https://tatame.smartspin.com.br', cat: 'esporte' },
+    { id: 'role', nome: 'Rolê', desc: 'turismo e passeios', url: 'https://rolebr.s2bt.com.br', cat: 'esporte' },
+    { id: 'cosmograma', nome: 'Cosmograma', desc: 'personalidade e afinidade', url: 'https://cosmograma.smartspin.com.br', cat: 'esporte' },
+    { id: 'cupom', nome: 'Cupom', desc: 'cupons e promoções', url: 'https://cupom.smartspin.com.br', cat: 'dinheiro' },
+    { id: 'comparador', nome: 'Comparador', desc: 'internet, TV e celular', url: 'https://comparador.smartspin.com.br', cat: 'dinheiro' },
+    { id: 'viagens', nome: 'Viagens', desc: 'passagens, milhas e roteiros', url: 'https://viagens.smartspin.com.br', cat: 'dinheiro' },
+    { id: 'prumo', nome: 'Prumo', desc: 'assessor pessoal', url: 'https://prumo.s2bt.com.br', cat: 'dinheiro' },
+    { id: 'poderometro', nome: 'Poderômetro', desc: 'política em dados', url: 'https://poderometro.com.br', cat: 'info' },
+    { id: 'inclui', nome: 'Inclui+', desc: 'direitos PcD', url: 'https://incluimais.s2bt.com.br', cat: 'info' },
+    { id: 'prisma', nome: 'Prisma', desc: 'íntegra dos fatos e viés da imprensa', url: '', cat: 'info' },
+    { id: 'agape', nome: 'Ágape Resolve', desc: 'rede do BNI Ágape', url: 'https://agaperesolve.s2bt.com.br', cat: 'ferramentas' },
+    { id: 'alpinista', nome: 'O Alpinista', desc: 'perguntas em dupla', url: '', cat: 'jogos' },
+    { id: 'jporcaro', nome: 'JPorcaro', desc: 'terapia quântica', url: 'https://jporcaro.smartspin.com.br', cat: 'sites' },
+    { id: 'jspinola', nome: 'JSpinola', desc: 'cibernética social', url: 'https://jspinola.smartspin.com.br', cat: 'sites' },
+    { id: 'allanbernacchi', nome: 'Dr. Allan Bernacchi', desc: 'cirurgia plástica', url: 'https://allanbernacchi.smartspin.com.br', cat: 'sites' }
   ];
+  var CATEGORIAS = [['esporte', 'Esporte e Bem-estar'], ['dinheiro', 'Dinheiro e Dia a Dia'], ['info', 'Informação e Cidadania'], ['ferramentas', 'Ferramentas'], ['jogos', 'Jogos'], ['sites', 'Sites Profissionais']];
+  var catAbertas = {};
   var NETWORK = [
     ['Redes', [['LinkedIn · Rafael', 'https://www.linkedin.com/in/rafaspinola/'], ['LinkedIn · S2BT', 'https://www.linkedin.com/company/s2bt-energia/'], ['@orafaelspinola', 'https://www.instagram.com/orafaelspinola/'], ['@s2bt.energia', 'https://www.instagram.com/s2bt.energia/']]],
     ['BNI e Google', [['BNI Connect', 'https://www.bniconnectglobal.com/'], ['BNI Academy', 'https://www.bnibusinessbuilder.com/'], ['myBNI', 'https://www.mybni.com/'], ['Google Meu Negócio', 'https://business.google.com/']]]
@@ -1633,11 +1650,21 @@ footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; 
     if (qual === 'smartspin') {
       set('popTitulo', 'Smart Spin · projetos');
       var desenhar = function () {
-        corpo.innerHTML = '<div class="projs">' + PROJETOS.map(function (p) {
-          var f = fluxo && fluxo[p.id], n = f ? f.dias30 : null;
-          return '<a class="proj' + (p.url ? '' : ' off') + '" ' + (p.url ? 'href="' + p.url + '"' : 'aria-disabled="true"') + ' title="' + (f ? 'Hoje: ' + f.hoje + ' · 30 dias: ' + f.dias30 + ' · total: ' + f.total : 'Contador ainda sem dados') + '">' +
-            '<span class="cont" aria-label="visitas em 30 dias">' + curto(n) + '</span><b>' + esc(p.nome) + '</b><small>' + esc(p.url ? p.desc : 'endereço a definir') + '</small></a>';
-        }).join('') + '</div><p class="nota-fluxo">Visitantes nos últimos 30 dias (1 por aparelho por dia) · passe o mouse para ver hoje e o total</p>';
+        var linha = function (p) {
+          var f = fluxo && fluxo[p.id], n = f ? f.dias30 : (fluxo ? 0 : null);
+          return '<a class="cat-item' + (p.url ? '' : ' off') + '" ' + (p.url ? 'href="' + p.url + '"' : 'aria-disabled="true"') + ' title="' + (f ? 'Hoje: ' + f.hoje + ' · 30 dias: ' + f.dias30 + ' · total: ' + f.total : 'Contador ainda sem dados') + '">' +
+            '<span class="cat-nome"><b>' + esc(p.nome) + '</b><small>' + esc(p.url ? p.desc : 'em breve · ' + p.desc) + '</small></span><span class="cont" aria-label="visitas em 30 dias">' + curto(n) + '</span></a>';
+        };
+        var topo = PROJETOS.filter(function (p) { return p.cat === 'topo'; });
+        var h = '<div class="cat-topo">' + topo.map(linha).join('') + '</div><div class="cat-grade">';
+        h += CATEGORIAS.map(function (c) {
+          var its = PROJETOS.filter(function (p) { return p.cat === c[0]; });
+          var soma = its.reduce(function (s, p) { var f = fluxo && fluxo[p.id]; return s + (f ? f.dias30 : 0); }, 0);
+          return '<details class="cl-lista cat" data-cat="' + c[0] + '"' + (catAbertas[c[0]] ? ' open' : '') + '><summary><span>' + c[1] + '</span><small>' + its.length + (its.length === 1 ? ' item' : ' itens') + (fluxo ? ' · ' + curto(soma) + ' visitas' : '') + '</small></summary>' +
+            '<div class="cl-itens">' + its.map(linha).join('') + '</div></details>';
+        }).join('');
+        corpo.innerHTML = h + '</div><p class="nota-fluxo">Visitantes nos últimos 30 dias (1 por aparelho por dia) · passe o mouse para ver hoje e o total</p>';
+        corpo.querySelectorAll('details.cat').forEach(function (d) { d.addEventListener('toggle', function () { catAbertas[d.dataset.cat] = d.open; }); });
       };
       desenhar();
       pega('/api/fluxo').then(function (j) { if (j && !j.erro) { fluxo = j; desenhar(); } }).catch(function () {});
